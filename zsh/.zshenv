@@ -39,33 +39,34 @@ if [[ "${PROFILE_ZSHSTARTUP:-}" == "y" ]]; then
     # The settings inside this block are undone/restored at the end of the
     # accompanying .zshrc
     #
-    # /etc/zsh/zshenv is read before anything from this file is sourced. Keep the
-    # contents of that file very lightweight if possible. The accuracy of the
-    # startup time from profiling will be contingent on the time taken to
+    # /etc/zsh/zshenv is read before anything from this file is sourced. Keep
+    # the contents of that file very lightweight if possible. The accuracy of
+    # the startup time from profiling will be contingent on the time taken to
     # source /etc/zsh/zshenv.
     CURRENTLY_PROFILING_ZSHSTARTUP=y
     zmodload zsh/zprof
 
     # Anonymous function to create a profile log. It gets executed immediately
     () {
-	local ts_format="%D{%Y%m%dT%H%M%S.%6.}"
-	PROFILE_LOG="${TMPDIR:-/tmp}/zshstartup.${(%)ts_format}"
-	install -m 'u=rw,go=' /dev/null "${PROFILE_LOG}"
+        local ts_format="%D{%Y%m%dT%H%M%S.%6.}"
+        PROFILE_LOG="${TMPDIR:-/tmp}/zshstartup.${(%)ts_format}"
+        install -m 'u=rw,go=' /dev/null "${PROFILE_LOG}"
     }
 
-    # In order to return prompt_subst and xtrace options to what they are originally,
-    # their values are saved before the options are set.
+    # In order to return prompt_subst and xtrace options to what they are
+    # originally, their values are saved before the options are set.
     if [[ -o promptsubst ]]; then
-	PROFILE_PROMPT_SUBST=y
+        PROFILE_PROMPT_SUBST=y
     fi
     if [[ -o xtrace ]]; then
-	PROFILE_XTRACE=y
+        PROFILE_XTRACE=y
     fi
     setopt prompt_subst
     setopt xtrace
 
     # In order to be able to restore the location of fd#2, point fd#3 to the
-    # current location of fd#2 before pointing fd#2 to the log file defined above.
+    # current location of fd#2 before pointing fd#2 to the log file defined
+    # above.
     exec 3>&2
     exec 2>>"${PROFILE_LOG}"
 fi

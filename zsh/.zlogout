@@ -14,10 +14,9 @@
 
 # Attempt to clear the console upon logout
 
-# /usr/bin/clear_console is provided by: bash (apt)
-[[ ! -x /usr/bin/clear_console ]] || \
+if [[ -x /usr/bin/clear_console ]]; then
     /usr/bin/clear_console -q
-
-# /usr/bin/clear is provided by: ncurses-bin (apt)
-[[ ! -x /usr/bin/clear ]] || \
+fi
+if [[ -x /usr/bin/clear ]]; then
     /usr/bin/clear
+fi
