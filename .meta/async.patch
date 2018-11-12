@@ -1,0 +1,41 @@
+--- ./async.zsh	2018-08-15 16:14:05.000000000 +0300
++++ ./zsh/functions/async	2018-08-26 23:49:51.384460675 -0700
+@@ -1,4 +1,38 @@
+ #!/usr/bin/env zsh
++# vim: ft=zsh:foldmethod=marker:foldenable
++# FILE SOURCE:
++#   REPOSITORY: https://github.com/mafredri/zsh-async
++#   DIRECTORY: ./
++#   COMMIT HASH: 5248bd85bf2c522ebfa2b8d18ee7bc736d10c791
++#   COMMIT DATE: Wed Aug 15 16:14:05 2018 +0300
++#   CHANGES INTRODUCED:
++#       - Copied the text of ./LICENSE from the repository and introduced this
++#         data, adding the lines 2-35
++#   PATCH PROVIDED IN UNIFIED DIFF FORMAT: .meta/async.zsh.patch
++#
++#   BEGIN TEXT OF ./LICENSE {{{
++# The MIT License (MIT)
++# 
++# Copyright (c) 2015 Mathias Fredriksson <mafredri@gmail.com>
++# 
++# Permission is hereby granted, free of charge, to any person obtaining a copy
++# of this software and associated documentation files (the "Software"), to deal
++# in the Software without restriction, including without limitation the rights
++# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++# copies of the Software, and to permit persons to whom the Software is
++# furnished to do so, subject to the following conditions:
++# 
++# The above copyright notice and this permission notice shall be included in
++# all copies or substantial portions of the Software.
++# 
++# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++# THE SOFTWARE.
++#   END   TEXT OF ./LICENSE }}}
+ 
+ #
+ # zsh-async
