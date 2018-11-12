@@ -1,0 +1,45 @@
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Set the terminal color to red after successfully running a command with sudo
+# also schedule an "empty" async worker to sleep for 120s, and a callback to
+# kill the chache and set the color back. The default timeout is 300s.
+#
+# There is no way to check the sudo cache without either invalidating or
+# updating the credentials cache.
+#
+# The case of refreshed credentials when not through this function is not
+# covered
+
+local retcode=0
+my-sudo:set-it-back () {
+    sudo -k || true
+    unfunction my-sudo:set-it-back
+    typeset -g psvar[2]="${psvar[1]}"
+    zle reset-prompt
+}
+
+async
+async_start_worker sudo_timer_worker
+async_register_callback sudo_timer_worker my-sudo:set-it-back
+async_flush_jobs sudo_timer_worker
+sudo "${@}"; retcode="${?}"
+if sudo -vn >/dev/null 2>&1; then
+    psvar[2]=red
+    async_job sudo_timer_worker sleep 120
+else
+    unfunction my-sudo:set-it-back
+    typeset -g psvar[2]="${psvar[1]}"
+fi
+return "${retcode}"
