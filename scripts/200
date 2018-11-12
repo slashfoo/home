@@ -1,0 +1,147 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+setopt err_exit
+setopt no_unset
+setopt pipe_fail
+
+last-online-d () {
+    local now="$(date +"%s.%N")"
+    local last_online="$(
+        stat -L --format='%Y' "${HOME}/.local/last_online" 2>/dev/null || \
+            echo 0
+    )"
+    local time_since_heartbeat="$(
+        printf "%.0f" "$(( (now - last_online)*1000 ))"
+    )"
+    echo "${time_since_heartbeat}"
+}
+
+typeset SCRIPT_NAME="$(basename "${0}")"
+typeset DEFAULT_TARGET_URL='https://google.com/generate_204'
+typeset TARGET_URL="${TWOHUNDRED_URL:-${DEFAULT_TARGET_URL}}"
+
+set +e
+read -r -d '' USAGE <<-EOUSAGE
+	Usage:	${SCRIPT_NAME} [-frn] TARGET_URL
+	      	${SCRIPT_NAME} [-h]
+
+	Runs a check to verify there is a valid connection to the internet.
+	Uses curl on TARGET_URL and expects it to return successfully.
+
+	The url used can be customized using the environment variable
+	TWOHUNDRED_URL.
+
+	By default it uses ‘${DEFAULT_TARGET_URL}’.
+
+	Options:
+	      	-x           	enable DEBUG messages.
+	      	-f           	Force getting status ignoring caches.
+	      	-n           	Suppress all output of the commands executed.
+	      	             	Ignored if using '-x'.
+EOUSAGE
+set -e
+
+print_usage () {
+    echo "${USAGE}" >&2
+}
+
+typeset RETCODE=0
+typeset FORCE=
+typeset NO_OUTPUT=
+typeset DEBUG=
+while getopts ":hfnx" opt; do
+    case "${opt}" in
+        h)
+            print_usage
+            exit 0
+            ;;
+        x)
+            DEBUG=yes
+            ;;
+        f)
+            FORCE=yes
+            ;;
+        n)
+            NO_OUTPUT=yes
+            ;;
+        :)
+            echo "Error: ‘-${OPTARG}’ requires a parameter" >&2
+            echo "" >&2
+            print_usage
+            exit 1
+            ;;
+        \?)
+            echo "Error: ‘-${OPTARG}’ is not a valid option/argument." >&2
+            echo "" >&2
+            print_usage
+            exit 1
+            ;;
+    esac
+done
+shift $(( OPTIND - 1 ))
+unset opt
+unset OPTIND
+unset OPTERR
+unset OPTARG
+
+if [[ "${#}" -gt 1 ]]; then
+    echo "Error: Must provide at most one command line argument." >&2
+    echo "" >&2
+    print_usage
+    exit 1
+elif [[ "${#}" -eq 1 ]]; then
+    TARGET_URL="${1}"
+    shift
+fi
+
+if [[ -n "${FORCE:-}" ]]; then
+    RETCODE=1
+elif [[ "$(last-online-d)" -ge 5000 ]]; then
+    RETCODE=1
+fi
+
+if [[ -n "${DEBUG:-}" ]]; then
+    set -x
+    NO_OUTPUT=
+fi
+if command -v curl >/dev/null 2>&1 && [[ "${RETCODE:-0}" -ne 0 ]]; then
+    if [[ -n "${NO_OUTPUT}" ]]; then
+        exec </dev/null
+        exec >/dev/null 2>&1
+    fi
+    set +e
+    typeset CURL_RESPONSE_CODE="$(
+        curl \
+            --write-out "%{http_code}" \
+            --output /dev/stderr \
+            --max-time 2 --silent -I "${TARGET_URL}"
+    )"
+    case "${CURL_RESPONSE_CODE}" in
+        20?)
+            RETCODE=0
+            ;;
+        *)
+            echo -n "curl got a response with " >&2
+            echo "HTTP Status code ‘${CURL_RESPONSE_CODE}’, failing." >&2
+            RETCODE=2
+            ;;
+    esac
+    set -e
+    if [[ "${RETCODE}" -eq 0 ]]; then
+        touch "${HOME}/.local/last_online" || true
+    fi
+fi
+exit "${RETCODE}"

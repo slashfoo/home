@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eu -o pipefail
+
+declare EXECUTABLE="bash"
+
+SCRIPT_NAME="$(basename "${0}")"
+
+set +e
+read -r -d '' USAGE <<-EOUSAGE
+	Usage:	${SCRIPT_NAME} [-f] [-x EXECUTABLE] [SCRIPT...]
+	      	${SCRIPT_NAME} [-h]
+
+	Options:
+	      	-x EXECUTABLE	Create a script that uses \${EXECUTABLE}.
+	      	             	Defaults to ‘bash’.
+	      	-f           	Instead of using ‘#!/usr/bin/env’ use full path to
+	      	             	the \${EXECUTABLE}.
+EOUSAGE
+set -e
+
+print_usage () {
+    echo "${USAGE}" >&2
+}
+
+declare FIXED=
+while getopts ":hfx:" opt; do
+    case "${opt}" in
+        h)
+            print_usage
+            exit 0
+            ;;
+        f)
+            FIXED=yes
+            ;;
+        x)
+            EXECUTABLE="${OPTARG}"
+            ;;
+        :)
+            echo "Error: ‘-${OPTARG}’ requires a parameter" >&2
+            echo "" >&2
+            print_usage
+            exit 1
+            ;;
+        \?)
+            print_usage
+            exit 1
+            ;;
+    esac
+done
+shift $(( OPTIND - 1 ))
+unset opt
+unset OPTIND
+unset OPTERR
+unset OPTARG
+
+declare -a SCRIPTS=( "${@}" )
+
+if [[ "${#SCRIPTS[@]}" -eq 0 ]]; then
+    echo "Error: no scripts provided" >&2
+    echo "" >&2
+    print_usage
+    exit 1
+fi
+
+declare SHEBANG_LINE='#!/usr/bin/env '"${EXECUTABLE}"
+if [[ -n "${FIXED}" ]]; then
+    declare EXECUTABLE_NAME="${EXECUTABLE}"
+    EXECUTABLE="$(command -v "${EXECUTABLE_NAME}" || true)"
+
+    [[ "${EXECUTABLE}" == /* ]] || \
+        EXECUTABLE="$(readlink -f "${EXECUTABLE}" || true)"
+
+    if [[ -n "${EXECUTABLE}" ]]; then
+        SHEBANG_LINE='#!'"${EXECUTABLE}"
+    else
+        echo -n "Error: ‘-f’ specified yet ">&2
+        echo "could not locate ‘${EXECUTABLE_NAME}’ in \${PATH}" >&2
+        echo "" >&2
+        print_usage
+        exit 1
+    fi
+fi
+
+for target in "${SCRIPTS[@]}"; do
+    if [[ -e "${target}" ]]; then
+        echo "‘${target}’ exists, skipping" >&2
+        continue
+    fi
+    echo -n "Creating script ${target}... " >&2
+    install -m 'u=rwx,go=' <(echo "${SHEBANG_LINE}") "${target}"
+    echo "Done"
+done
