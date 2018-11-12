@@ -1,0 +1,33 @@
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+ForegroundColour=170,170,170
+BackgroundColour=58,58,58
+CursorColour=204,204,204
+Black=72,72,72
+BoldBlack=130,130,130
+Red=191,93,90
+BoldRed=255,172,171
+Green=161,181,108
+BoldGreen=197,218,139
+Yellow=219,166,86
+BoldYellow=247,203,136
+Blue=124,175,194
+BoldBlue=133,221,250
+Magenta=186,139,175
+BoldMagenta=241,198,230
+Cyan=85,180,168
+BoldCyan=124,223,210
+White=204,204,204
+BoldWhite=238,238,238
