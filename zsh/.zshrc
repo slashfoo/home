@@ -102,3 +102,7 @@ unset PROFILE_XTRACE
 } 2>/dev/null
 
 typeset -gx ZSHENV_PATHS_FINALIZED="${EPOCHREALTIME:-DONE}"
+
+TRAPALRM () {
+    zle reset-prompt
+}
