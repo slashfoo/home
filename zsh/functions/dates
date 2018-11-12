@@ -1,0 +1,70 @@
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Display the timezones in the array
+# Sorted by their offset from greatest to least
+# Highlighting:
+# - Line with UTC TZ in white
+# - Line with US/Pacific TZ (current) in blue
+# - HH:MM:SS between 21:00-06:59:00 in Red
+# - HH:MM:SS between 09:00-17:59:00 in Green
+# - HH:MM:SS not in the two intervals above in Yellow
+
+local -Ua timezones=(
+    US/Alaska
+    US/Central
+    US/Eastern
+    US/Hawaii
+    US/Mountain
+    US/Pacific
+    UTC
+    America/Santo_Domingo
+    Australia/Sydney
+    Iceland
+    Israel
+)
+
+if [[ "${#}" -eq 0 ]]; then
+    set -- +"%10A, %b %_d  %Y-%m-%dT%H:%M:%S%:z (%4Z)"
+elif [[ "${@}" != *+* ]]; then
+    set -- +"%10A, %b %_d  %Y-%m-%dT%H:%M:%S%:z (%4Z)" "${@}"
+fi
+for zone in "${(@)timezones}"; do
+    printf \
+        "%s|%22s  %s\n" \
+        "$(env TZ="${zone}" date +"%z")" \
+        "${zone/_/ }" \
+        "$(env TZ="${zone}" date "${@}")"
+done | \
+    sort -nr | \
+    cut -f2- -d'|' |
+    sed -E \
+        -e 's#T(2[123]|0[0-6]):([0-9]{2}):([0-9]{2})#T\x1b[1m\x1b[38;5;09m\1:\2:\3\x1b[0m#' \
+        -e 's#T(09|1[0-7]):([0-9]{2}):([0-9]{2})#T\x1b[1m\x1b[38;5;10m\1:\2:\3\x1b[0m#' \
+        -e 's#T([0-9][0-9]):([0-9]{2}):([0-9]{2})#T\x1b[1m\x1b[38;5;11m\1:\2:\3\x1b[0m#' | \
+    awk '
+        /US\/Pacific/ {
+            gsub("\x1b\\[0m", "\x1b[1m\x1b[38;5;4m", $0);
+            printf "\x1b[1;7m\x1b[38;5;4m%s\x1b[0m\n", $0
+            next
+        }
+        /UTC/ {
+            gsub("\x1b\\[0m", "\x1b[1m\x1b[38;5;7m", $0);
+            printf "\x1b[1;7m\x1b[38;5;7m%s\x1b[0m\n", $0
+            next
+        }
+        {
+            printf "%s\x1b[0m\n", $0
+        }
+        '
