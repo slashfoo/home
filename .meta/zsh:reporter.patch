@@ -1,0 +1,99 @@
+--- ./Util/reporter	2017-09-08 17:24:12.811201625 -0700
++++ ./zsh/functions/zsh:reporter	2018-11-11 20:03:18.144686200 -0800
+@@ -1,4 +1,61 @@
+-#!/usr/local/bin/zsh
++#!/usr/bin/env zsh
++# vim: ft=zsh:foldmethod=marker:foldenable
++# FILE SOURCE:
++#   REPOSITORY: https://github.com/zsh-users/zsh
++#   DIRECTORY: ./Util/reporter
++#   COMMIT HASH: ac9d17a5977863afabf7c49aaba97d142580f081
++#   COMMIT DATE: Sat Sep 2 21:17:40 2000 +0000
++#   CHANGES INTRODUCED:
++#       - Change shebang to use /usr/bin/env
++#       - Removed ‘--’ of the bindkey call on line: 296 (original line: 239)
++#       - Re-tabbed the file, expanding tabs to four spaces.
++#       - Removed trailing spaces on:
++#           - line:  78 (original line: 135)
++#           - line: 265 (original line: 322)
++#           - line: 271 (original line: 328)
++#       - Copied the text of ./LICENSE from the repository and introduced this
++#         data, adding the lines 2-58
++#   PATCH PROVIDED IN UNIFIED DIFF FORMAT: .meta/zsh:reporter.patch
++#
++#   BEGIN TEXT OF ./LICENSE {{{
++# Unless otherwise noted in the header of specific files, files in this
++# distribution have the licence shown below.
++#
++# However, note that certain shell functions are licensed under versions
++# of the GNU General Public Licence.  Anyone distributing the shell as a
++# binary including those files needs to take account of this.  Search
++# shell functions for "Copyright" for specific copyright information.
++# None of the core functions are affected by this, so those files may
++# simply be omitted.
++#
++# --
++#
++# The Z Shell is copyright (c) 1992-2017 Paul Falstad, Richard Coleman,
++# Zoltán Hidvégi, Andrew Main, Peter Stephenson, Sven Wischnowsky, and
++# others.  All rights reserved.  Individual authors, whether or not
++# specifically named, retain copyright in all changes; in what follows, they
++# are referred to as `the Zsh Development Group'.  This is for convenience
++# only and this body has no legal status.  The Z shell is distributed under
++# the following licence; any provisions made in individual files take
++# precedence.
++#
++# Permission is hereby granted, without written agreement and without
++# licence or royalty fees, to use, copy, modify, and distribute this
++# software and to distribute modified versions of this software for any
++# purpose, provided that the above copyright notice and the following
++# two paragraphs appear in all copies of this software.
++#
++# In no event shall the Zsh Development Group be liable to any party for
++# direct, indirect, special, incidental, or consequential damages arising out
++# of the use of this software and its documentation, even if the Zsh
++# Development Group have been advised of the possibility of such damage.
++#
++# The Zsh Development Group specifically disclaim any warranties, including,
++# but not limited to, the implied warranties of merchantability and fitness
++# for a particular purpose.  The software provided hereunder is on an "as is"
++# basis, and the Zsh Development Group have no obligation to provide
++# maintenance, support, updates, enhancements, or modifications.
++#   END   TEXT OF ./LICENSE }}}
+ #
+ # NAME:
+ #	reporter
+@@ -75,7 +132,7 @@
+ esac
+ 
+ #
+-# Default Values 
++# Default Values
+ #
+ 
+ CPP=${CPP:-/lib/cpp}
+@@ -236,7 +293,7 @@
+ 			[[ "$2" == "--" ]] && shift
+ 			[[ "$2" == ".safe" ]] && return
+ 			echo
+-			builtin bindkey -L -M -- "$2"
++			builtin bindkey -L -M "$2"
+ 		}
+ 		eval "`builtin bindkey -lL`"
+ 	)
+@@ -262,13 +319,13 @@
+ 
+ if [[ "$reporter_do_all" = "yes" || "$reporter_do_fun" = "yes" ]]
+ then
+-	echo 
++	echo
+ 	echo "# Undefined functions."
+ 	echo
+ 
+ 	autoload + | ${AWK} '{print "autoload " $1}'
+ 
+-	echo 
++	echo
+ 	echo "# Defined functions."
+ 	echo
+ 
