@@ -411,7 +411,7 @@ let g:RepeatLocation = $MYVIMDIR . '/autoload/repeat.vim'
 let g:PlugLocation = $MYVIMDIR . '/autoload/plug.vim'
 let g:PlugBundleLocation = $MYVIMDIR . '/_ext_plugin'
 
-" If Plug is present, fine, if not, showerr, because we're dirty.
+" If Repeat/Plug are present, fine, if not, showerr, because we're dirty.
 " Get it? ShowErr, is like shower... I'll show myself out...
 
 if !filereadable(g:RepeatLocation)
