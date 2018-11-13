@@ -407,11 +407,24 @@ runtime! macros/matchit.vim
 call VimRC_EnsurePrivateDir($MYVIMDIR . '/autoload')
 call VimRC_EnsurePrivateDir($MYVIMDIR . '/configs')
 
+let g:RepeatLocation = $MYVIMDIR . '/autoload/repeat.vim'
 let g:PlugLocation = $MYVIMDIR . '/autoload/plug.vim'
 let g:PlugBundleLocation = $MYVIMDIR . '/_ext_plugin'
 
 " If Plug is present, fine, if not, showerr, because we're dirty.
 " Get it? ShowErr, is like shower... I'll show myself out...
+
+if !filereadable(g:RepeatLocation)
+    echohl ErrorMsg
+    echomsg g:RepeatLocation . ' is missing. Get it from: ' .
+       \ 'https://raw.githubusercontent.com/tpope/vim-repeat/master/autoload/repeat.vim'
+    echohl None
+else
+    if !exists('*repeat#set')
+        " Maybe we just downloaded the thing, let's try to load it...
+        runtime! autoload/repeat.vim
+    endif
+endif
 
 if !filereadable(g:PlugLocation)
     echohl ErrorMsg
@@ -436,7 +449,6 @@ else
     if exists('*plug#end')
         call plug#end()
     endif
-    runtime! autoload/repeat.vim
 endif
 
 filetype plugin indent on
