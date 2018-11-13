@@ -1110,7 +1110,7 @@ augroup vimrc_general
     autocmd BufWinLeave * silent! mkview
 
     " reset terminal colors upon quitting
-    autocmd VimLeave * !echo -ne "\x1b[0m"
+    autocmd VimLeave * silent! !echo -ne "\x1b[0m"
 augroup end
 
 if has('nvim')
