@@ -1,0 +1,1157 @@
+" Copyright 2018 Jamiel Almeida
+"
+" Licensed under the Apache License, Version 2.0 (the "License");
+" you may not use this file except in compliance with the License.
+" You may obtain a copy of the License at
+"
+"     http://www.apache.org/licenses/LICENSE-2.0
+"
+" Unless required by applicable law or agreed to in writing, software
+" distributed under the License is distributed on an "AS IS" BASIS,
+" WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+" See the License for the specific language governing permissions and
+" limitations under the License.
+
+" Note from the author: {{{
+"
+" I do not recommend blind copy-pasting of things someone may not need or
+" understand onto their vimrc. This is a very opinionated configuration file,
+" and also includes bad jokes in the comments. Where things are not intuitive
+" or obvious, I've left myself comments that may or may not be useful to
+" others. Suggestions for settings or better documenting/explaining the
+" settings is always welcome. Feel free to reach out.
+"
+" A lot of stuff in this vimrc is inspired by Steve Losh's as well as Drew
+" Neil's masterful vimrc files.
+"
+" If you find mine interesting, go check theirs out, you'll get a kick from
+" them too.
+"
+" Steve's: https://bitbucket.org/sjl/dotfiles
+" Drew's: http://github.com/nelstrom/dotfiles
+"
+" }}}
+
+" NOCOMPATIBLE: the often unneeded thing {{{
+
+" 'nocompatible' is needed if this file is to be loaded using vim's `-u`
+" command line flag. It is not otherwise needed.
+"
+" Documented on
+"   `:help 'nocompatible'` and
+"   `:help compatible-default`
+set nocompatible
+filetype off
+
+" NOCOMPATIBLE: the often unneeded thing }}}
+" GUI {{{
+
+" basic GUI options only, I don't use these enough to warrant a separate .gvim
+
+if has('gui_running')
+    let &guifont = 'Fira Code 16px'
+    set guioptions=acMi
+    " a = autoselect
+    " c = console dialogs
+    " M = don't load menu.vim
+    " i = use a vim icon
+endif
+
+" GUI }}}
+" LEADER {{{
+
+" Clear out aanything from the new leader's mapping
+nmap <Space> <NOP>
+
+let g:mapleader = "\<Space>"
+let g:maaplocalleader = "\\"
+
+" LEADER }}}
+" UTF-8: It's the UTFure™ {{{
+
+set encoding=utf-8
+set modifiable
+set fileencoding=utf-8
+set fileencodings=utf-8
+scriptencoding utf-8
+set nobomb " BOMs are the devil
+
+" UTF-8: It's the UTFure™ }}}
+
+" HELPERS: Functions <SID> {{{
+
+function! <SID>ExecuteMacroOverVisualRange() " {{{
+    echo "@" . getcmdline()
+    execute ":'<,'>normal @" . nr2char(getchar())
+endfunction " }}}
+function! <SID>OpenExtPluginsConfig() " {{{
+    if isdirectory($MYVIMDIR . '/configs')
+        execute "edit " . fnameescape($MYVIMDIR .
+                                    \ '/configs/ext_plugin_settings.vim')
+    else
+        echohl WarningMsg
+        echomsg $MYVIMDIR . '/configs does not exist or is not a directory'
+        echohl None
+    endif
+endfunction " }}}
+function! <SID>ListcharsToggleTrail(set_to) " {{{
+    if index(['on', 'off', 'toggle'], a:set_to) == -1
+        throw 'unexpected value for parameter variable set_to ' .
+            \ '"' . a:set_to . '"'
+    endif
+
+    let l:trail_begin = stridx(&listchars, 'trail:')
+    let l:trail_end = stridx(&listchars, ',', l:trail_begin)
+    let l:trail_end = l:trail_end == -1 ? len(&listchars) : l:trail_end - 1
+
+    let l:has_trail = l:trail_begin != -1
+
+    let l:action = 'unset'
+    if ( !l:has_trail && a:set_to == 'toggle' ) || a:set_to == 'on'
+        let l:action = 'set'
+    endif
+
+    if l:action == 'set'
+        if !exists('g:prev_trail_listchar') || g:prev_trail_listchar != ''
+            let g:prev_trail_listchar = 'trail:·'
+        endif
+        execute 'set listchars+=' . g:prev_trail_listchar
+        unlet! g:prev_trail_listchar
+    else
+        let g:prev_trail_listchar = &listchars[l:trail_begin : l:trail_end]
+        execute 'set listchars-=' . g:prev_trail_listchar
+    endif
+endfunction " }}}
+function! <SID>Preserve(command) " {{{
+    " Based on: http://vimcasts.org/episodes/tidying-whitespace/
+    " Preparation: save last search, clipboard, and cursor position.
+    let l:_s = @/
+    let l:clipboard = getreg('"')
+    let l:l = line('.')
+    let l:c = col('.')
+
+    " Do the business:
+    execute a:command
+
+    " Cleanup: restore previous search history, clipboard and cursor position
+    let @/ = l:_s
+    call setreg('"', l:clipboard)
+    call cursor(l:l, l:c)
+    normal! zvzz
+endfunction " }}}
+
+" HELPERS: Functions <SID> }}}
+" HELPERS: Functions VimRC_* {{{
+
+function! VimRC_AddLine(where) " {{{
+    if index(['above', 'below'], a:where) == -1
+        throw 'unexpected value for parameter variable where ' .
+            \ '"' . a:where . '"'
+    endif
+    if a:where == 'below'
+        call append(line('.'), '')
+    else
+        let l:l = line('.')
+        let l:c = col('.')
+        call append(line('.') - 1, '')
+        call cursor(l:l + 1, l:c)
+        execute "silent normal! \<C-e>"
+    endif
+endfunction " }}}
+function! VimRC_BrowseX(url) " {{{
+    " TODO(jamielalmeida): Add a customizable command to call
+    try
+        call netrw#NetrwBrowseX(a:url, 0)
+    catch /E117: Unknown function: netrw#NetrwBrowseX/
+        call netrw#BrowseX(a:url, 0)
+    endtry
+endfunction " }}}
+function! VimRC_Bwipeout() " {{{
+    try
+        buffer #
+    catch /E86:/
+        bprevious
+    endtry
+    try
+        bwipeout #
+    catch /E517:/
+    endtry
+endfunction " }}}
+function! VimRC_DiffUnsavedChanges() " {{{
+    if &modified
+        if executable('colordiff')
+            execute 'write !diff -u ' .
+                  \ fnameescape(expand('%')) . ' - ' .
+                  \ ' | colordiff | less -R'
+        else
+            execute 'write !diff -u ' .
+                  \ fnameescape(expand('%')) . ' - '
+        endif
+    else
+        echohl WarningMsg
+        echomsg 'File has no unsaved changes'
+        echohl None
+    endif
+endfunction " }}}
+function! VimRC_EnsurePrivateDir(dir_path) " {{{
+    if !isdirectory(a:dir_path)
+        call mkdir(a:dir_path, 'p', 0700)
+        if isdirectory(a:dir_path)
+            echomsg 'Successfully created directory: ' . a:dir_path
+        else
+            echohl ErrorMsg
+            echomsg 'Failed to create directory: ' . a:dir_path
+            echohl None
+        endif
+    else
+        silent execute '!chmod "u=rwx,go=" -- ' . shellescape(a:dir_path)
+    endif
+endfunction " }}}
+function! VimRC_FollowURLUnderCursor() " {{{
+    let l:ourWORD = expand('<cWORD>')
+    let l:url_re_list = [
+                \ '\({\)\zs[a-z]\+:\/\/[^}]*\ze\(}\)',
+                \ '\(\[\)\zs[a-z]\+:\/\/[^\]]*\ze\(\]\)',
+                \ '\((\)\zs[a-z]\+:\/\/[^)]*\ze\()\)',
+                \ '\(<\)\zs[a-z]\+:\/\/[^>]*\ze\(>\)',
+                \ '\(["' . "'" . ']\)\zs[a-z]\+:\/\/.*\ze\(\1\)',
+                \ '[a-z]\+:\/\/[^,;"' . "'" . ']*',
+                \ ]
+    let l:matchedstr = ''
+    for l:url_re in l:url_re_list
+        let l:matchedstr = matchstr(l:ourWORD, l:url_re)
+        if l:matchedstr != ''
+            break
+        endif
+    endfor
+    if l:matchedstr != ''
+        call VimRC_BrowseX(l:matchedstr)
+    else
+        echohl ErrorMsg
+        echomsg "No URL found under cursor"
+        echohl None
+    endif
+endfunction " }}}
+function! VimRC_FormatBuffer() " {{{
+    call <SID>Preserve('normal! ggVG=')
+endfunction " }}}
+function! VimRC_OpenOldFilesBuffer() " {{{
+    new +setlocal\ buftype=nofile
+    0put =v:oldfiles
+    normal! gg
+    nnoremap <silent> <buffer> <CR>
+                             \ :let g:oldfiles_buffer = bufnr('%')<CR>
+                             \ :edit <C-r>=fnameescape(getline('.'))<CR><CR>
+                             \ :bwipeout <C-r>=g:oldfiles_buffer<CR><CR>
+                             \ :unlet! g:oldfiles_buffer<CR>
+endfunction " }}}
+function! VimRC_PasteEnter() " {{{
+    setlocal paste
+    augroup vimrc_pastehelper
+        autocmd!
+        autocmd InsertLeave * call VimRC_PasteExit()
+    augroup end
+endfunction " }}}
+function! VimRC_PasteExit() " {{{
+    setlocal nopaste
+    augroup vimrc_pastehelper
+        autocmd!
+    augroup end
+endfunction " }}}
+function! VimRC_RepeatMaybe(what_to_repeat) " {{{
+    if exists('*repeat#set')
+        call repeat#set(a:what_to_repeat)
+    endif
+endfunction " }}}
+function! VimRC_ToggleCrosshair() " {{{
+    if &cursorline
+        setlocal nocursorline
+        setlocal nocursorcolumn
+    else
+        setlocal cursorline
+        setlocal cursorcolumn
+    endif
+endfunction " }}}
+function! VimRC_ToggleDiffthis() " {{{
+    if &diff
+        diffoff
+    else
+        diffthis
+    endif
+endfunction " }}}
+function! VimRC_ToggleNumAndSign() " {{{
+    if &number
+        setlocal nonumber
+        setlocal norelativenumber
+        setlocal signcolumn=no
+    else
+        setlocal number
+        setlocal relativenumber
+        setlocal signcolumn=yes
+    endif
+endfunction " }}}
+function! VimRC_ToggleVirtualedit() " {{{
+    if exists('b:previous_virtualedit')
+        execute 'setlocal virtualedit=' . b:previous_virtualedit
+        echomsg 'virtualedit reset to ' . b:previous_virtualedit
+        unlet b:previous_virtualedit
+    else
+        let b:previous_virtualedit = &virtualedit
+        if b:previous_virtualedit == ''
+            let b:previous_virtualedit = 'block'
+        endif
+        setlocal virtualedit=all
+        echomsg 'virtualedit set to all'
+    endif
+endfunction " }}}
+function! VimRC_ToggleSyntax() " {{{
+    if exists('g:syntax_on')
+        silent! execute ':IndentGuidesDisable'
+        syntax off
+    else
+        silent! execute ':IndentGuidesEnable'
+        syntax on
+    endif
+endfunction " }}}
+
+" HELPERS: Functions VimRC_* }}}
+
+" RUNTIME: Path modification / Dir creation {{{
+
+if $MYVIMRC == ''
+    " Since $MYVIMRC is blank, we assume this is the case of using vim with
+    " `-u` flag
+    let $MYVIMRC = '/dev/null'
+    if $MYVIMDIR == ''
+        " Since no vim home directory was specified (this is a custom
+        " variable), set it to a sane default, so a user's ~/.vim directory is
+        " not clobbered. Hopefully nobody uses ~/.vim.alt for much :P
+        let $MYVIMDIR = $HOME . '/.vim.alt'
+    endif
+    if !isdirectory($MYVIMDIR)
+        echomsg 'Creating $MYVIMDIR at: ' . $MYVIMDIR
+        call mkdir($MYVIMDIR, 'p', 0700)
+        if isdirectory($MYVIMDIR)
+            echomsg 'Successfully created $MYVIMDIR: ' . $MYVIMDIR
+        endif
+    endif
+elseif $MYVIMRC != '/dev/null'
+    let $MYVIMDIR = fnamemodify($MYVIMRC, ':h')
+endif
+let $MYVIMDIR = substitute(fnamemodify($MYVIMDIR, ':p'), '/$', '', '')
+
+" Now we make sure that we're independent from ~/.vim and ~/.vim/after
+set runtimepath-=~/.vim
+set runtimepath-=~/.vim/after
+
+execute 'set runtimepath^=' . $MYVIMDIR
+execute 'set runtimepath^=' . $MYVIMDIR . '/after'
+let g:netrw_home = $MYVIMDIR
+
+if has('nvim')
+    let $MYVIMINFO = $MYVIMDIR . '/_nviminfo'
+else
+    let $MYVIMINFO = $MYVIMDIR . '/_viminfo'
+endif
+if !filereadable($MYVIMINFO)
+    silent execute '!install -m "u=rw,go=" /dev/null ' .
+                 \ shellescape($MYVIMINFO)
+else
+    silent execute '!chmod "u=rw,go=" -- ' . shellescape($MYVIMINFO)
+endif
+if has('nvim')
+    let &shada = "!,'99999,<99999,h,s1000,n" . $MYVIMINFO
+else
+    let &viminfo = "!,'99999,<99999,h,s1000,n" . $MYVIMINFO
+endif
+
+" RUNTIME: Path modification / Dir creation }}}
+" RUNTIME: I'm...... too weak... I can't... UNLIMITED POWundos {{{
+
+set history=9999 " :cmd history, I consider these kinda like undos...
+if has('persistent_undo')
+    let s:vim_undodir = $MYVIMDIR . '/_undos'
+    set undofile
+
+    call VimRC_EnsurePrivateDir(s:vim_undodir)
+    let &undodir = s:vim_undodir
+    unlet s:vim_undodir
+    set undolevels=99999
+    set undoreload=99999
+
+    set nobackup      " I have infinite undos, no backup needed
+    set noswapfile    " Or swapfiles
+    set updatecount=0 " Update swap after these many characters
+endif
+
+" RUNTIME: I'm...... too weak... I can't... UNLIMITED POWundos }}}
+" RUNTIME: Swappiness, Backupiness, and Viewiness {{{
+
+" in case of swapfile... break the glass
+call VimRC_EnsurePrivateDir($MYVIMDIR . '/_swaps')
+execute "set directory=" . $MYVIMDIR . '/_swaps'
+
+" also ward against straw backup files
+call VimRC_EnsurePrivateDir($MYVIMDIR . '/_backups')
+execute "set backupdir=" . $MYVIMDIR . '/_backups'
+
+" AND against stray viewed file temps
+call VimRC_EnsurePrivateDir($MYVIMDIR . '/_views')
+execute "set viewdir=" . $MYVIMDIR . '/_views'
+
+" RUNTIME: Swappiness, Backupiness, and Viewiness }}}
+" RUNTIME: Plugins and mini-plugins {{{
+
+runtime! macros/matchit.vim
+
+call VimRC_EnsurePrivateDir($MYVIMDIR . '/autoload')
+call VimRC_EnsurePrivateDir($MYVIMDIR . '/configs')
+
+let g:PlugLocation = $MYVIMDIR . '/autoload/plug.vim'
+let g:PlugBundleLocation = $MYVIMDIR . '/_ext_plugin'
+
+" If Plug is present, fine, if not, showerr, because we're dirty.
+" Get it? ShowErr, is like shower... I'll show myself out...
+
+if !filereadable(g:PlugLocation)
+    echohl ErrorMsg
+    echomsg g:PlugLocation . ' is missing. Get it from: ' .
+       \ 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    echohl None
+else
+    call VimRC_EnsurePrivateDir(g:PlugBundleLocation)
+    if !exists(':Plug')
+        " Maybe we just downloaded the thing, let's try to load it...
+        runtime! autoload/plug.vim
+    endif
+    if exists('*plug#begin')
+        call plug#begin(g:PlugBundleLocation)
+    endif
+    let g:plug_threads = 16
+    let g:plug_timeout = 60
+    let g:plug_retries = 3
+    let g:plug_shallow = 1
+    runtime! configs/ext_plugin_settings.vim
+
+    if exists('*plug#end')
+        call plug#end()
+    endif
+    runtime! autoload/repeat.vim
+endif
+
+filetype plugin indent on
+
+" RUNTIME: Plugins and mini-plugins }}}
+
+" SETTINGS: Core vim's 'Engine' thinguis {{{
+
+set viewoptions=cursor,folds,slash,unix
+let &path = '.,,/usr/include,' .
+          \ $HOME . '/.local/include' . ',' .
+          \ $MYVIMDIR . '/**'
+set suffixesadd=.txt,.md,.vim
+
+if !has('nvim')
+    set ttymouse=xterm2
+endif
+set mouse=nv
+set fileformats=unix,dos,mac
+set noendofline
+
+set splitbelow
+set splitright
+
+set nohidden
+set exrc   " enable local .vimrc's, I like to live dangerously
+set secure " but not too dangerously, so disable unsafe scary stuff from
+           " local .vimrc's
+
+set clipboard=unnamedplus
+set nolangremap
+
+" SETTINGS: Core vim's 'Engine' thinguis }}}
+" SETTINGS: Terminal and Responsiveness {{{
+
+set ttyfast
+set lazyredraw
+set notimeout
+set ttimeout
+set ttimeoutlen=10
+
+" disable audible beep and enable visualbell
+set visualbell t_vb=
+
+" SETTINGS: Terminal and Responsiveness }}}
+" SETTINGS: How keys (mis-)behave ... {{{
+
+set textwidth=79
+set formatoptions=tcroqnlj " Automatic formatting options
+set nojoinspaces           " I'm not part of the 'two spaces after period' club
+set breakindent
+set breakindentopt=sbr
+set nostartofline          " Keep the cursor on the same col. on cmd/movements
+set tildeop
+set backspace=indent,eol,start
+set whichwrap=
+
+if !exists('g:already_ran_vimrc')
+    set wrap
+endif
+if has('breakat')
+    set linebreak          " do soft wrapping at textwidth
+
+    " make linebreak break at ...
+    let &breakat = "\t!@*-+;:,./?"
+endif
+
+set virtualedit=block
+
+" SETTINGS: How keys (mis-)behave ... }}}
+" SETTINGS: How keys behave... part2: Indentation {{{
+
+set autoindent
+set smartindent
+set smarttab
+set nocindent
+set shiftround
+set copyindent
+set preserveindent
+
+set tabstop=4
+set softtabstop=4
+set shiftwidth=4
+set expandtab
+
+" SETTINGS: How keys behave... part2: Indentation }}}
+" SETTINGS: Search and Scrolling {{{
+
+set hlsearch
+set incsearch
+set wrapscan
+set ignorecase
+set smartcase
+
+set scrolloff=3
+set sidescrolloff=5
+set sidescroll=1
+
+" SETTINGS: Search and Scrolling }}}
+" SETTINGS: UI Elements {{{
+" menu, tab line, status, gutter, num columns, and invisible characters
+
+" I have already seen the splash way too many times
+set shortmess=aoOTIc
+
+set laststatus=2
+
+set signcolumn=yes
+set statusline=
+set statusline+=%03n:
+set statusline+=%{&paste==1?'\ [PASTE]':''}
+set statusline+=\ %-20.20((%{strlen(&ft)?&ft:'ft=?'},%{strlen(&fenc)?&fenc:'enc=?'},%{&ff})%)
+set statusline+=
+set statusline+=%<
+set statusline+=\ %f%{&mod?'[+]':''}
+set statusline+=\ %([%R%H]%)
+set statusline+=%=
+set statusline+=%5l:%-5c
+set statusline+=\ L%-6L
+set statusline+=\ (%3p%%)
+let s:my_statusline=&statusline
+
+set noshowmode " don't show current mode down the bottom
+set showcmd    " but otherwise show incomplete commands and charcounts
+
+set listchars=eol:¬,tab:»\ ,trail:·,extends:…,precedes:…,nbsp:·
+set fillchars=fold:·
+let &showbreak='↪ '
+if !exists('g:already_ran_vimrc')
+    set list
+    set number
+    set relativenumber
+endif
+set numberwidth=8
+set showtabline=0
+set display=lastline " Show as much as possible of the last line of a document
+
+set wildmenu
+set wildignorecase
+set wildignore=
+set wildignore+=*.DS_Store
+set wildignore+=*~,*.swp,*.orig
+set wildignore+=*.spl
+set wildignore+=.git,.hg,.svn
+set wildignore+=*.pyc,*.pyo
+set wildignore+=*.class
+set wildignore+=*.gem,*.rbc,*.rbo
+set wildignore+=*.jpg,*.bmp,*.gif,*.png,*.jpeg
+set wildignore+=*.mp4,*.mpegts
+set wildignore+=*.aux,*.out,*.toc
+set wildignore+=*.o,*.so,*.obj,*.dll,*.exe,*.manifest
+set wildignore+=*.luac,*.zwc,*.beam
+
+" Do tab completions like a shell
+set wildmode=longest:list
+
+" SETTINGS: UI Elements }}}
+" SETTINGS: VimIDE™ Stuff {{{
+
+if !exists('g:already_ran_vimrc')
+    syntax enable
+endif
+set synmaxcol=500
+
+set tags=./tags,./.tags,./TAGS,./.TAGS
+set tags+=tags;$HOME,.tags;$HOME,TAGS;$HOME,.TAGS;$HOME
+
+set complete=.,w,b,u,t,i,U,kspell
+set completeopt=menu
+set showfulltag
+set nrformats-=octal
+set modeline     " Enable local-to-buffer vim settings from modelines
+set modelines=5  " How many lines to check for the modelines
+set showmatch
+if !exists('g:already_ran_vimrc')
+    set nofoldenable
+endif
+
+" SETTINGS: VimIDE™ Stuff }}}
+" SETTINGS: diff options {{{
+
+set diffopt=filler
+set diffopt+=context:3
+set diffopt+=foldcolumn:3
+set diffopt+=iwhite
+set diffopt+=vertical
+
+" SETTINGS: diff options }}}
+
+" SPELLING: Variables/Settings {{{
+
+" Spell & Grammar Checking, etc... lists
+set spellsuggest=best,20
+
+" SPELLING: Variables/Settings }}}
+
+" COLORS/VISUAL: Less like eye-candy, more like eye-broccoli or eye-kale {{{
+
+" last-resort fallback colors
+set background=dark
+
+" fallback colors if my themes are not installed
+colorscheme desert
+
+" my preferred theme
+let g:nosat_transparent_bg = 1
+silent! colorscheme fairview
+
+" Cursorline and ColorColumn
+set colorcolumn=+1  " +1 here means text-width+1
+
+if !exists('g:already_ran_vimrc')
+    set cursorline
+endif
+
+" COLORS/VISUAL: Less like eye-candy, more like eye-broccoli or eye-kale }}}
+
+" COMMANDS: For great justice {{{
+
+command! -nargs=0 StripSpaces call <SID>Preserve(':%s/\v\s+$//e')
+command! -nargs=0 Oldfiles call VimRC_OpenOldFilesBuffer()
+
+" COMMANDS: For great justice }}}
+
+" MAPPINGS: <Plug> {{{
+
+nmap <silent> <Plug>AddLineBelow
+            \ :call VimRC_AddLine('below')<CR>
+            \ :call VimRC_RepeatMaybe("\<Plug>AddLineBelow")<CR>
+nmap <silent> <Plug>AddLineAbove
+            \ :call VimRC_AddLine('above')<CR>
+            \ :call VimRC_RepeatMaybe("\<Plug>AddLineAbove")<CR>
+
+" MAPPINGS: <Plug> }}}
+" MAPPINGS: Filename Usage {{{
+
+" Change current working directory to the current window's file's parent path
+nnoremap cd :cd <C-r>=fnameescape(expand('%:p:h'))<CR>/
+
+" MAPPINGS: Filename Usage }}}
+" MAPPINGS: <Leader> {{{
+
+nnoremap <silent> <Leader>$ x$p
+nnoremap <silent> <Leader><Space> :nohls<CR>
+nnoremap <Leader>d <NOP>
+nnoremap <Leader>x <NOP>
+
+nnoremap <Leader>b :call VimRC_FollowURLUnderCursor()<CR>
+nnoremap <Leader>o :update<CR>
+nnoremap <Leader>q :qall<CR>
+
+" cquit! = lose all changes on all buffers/windows and exit from vim with an
+"          error code
+nnoremap <Leader>Q :cquit!<CR>
+nnoremap <silent> <Leader>c :call VimRC_Bwipeout()<CR>
+
+nnoremap <Leader>C :bwipeout!<CR>
+
+nnoremap <Leader>ec :make<CR>
+nnoremap <Leader>ef :edit <C-r>=fnameescape(expand('%:h')) == ''
+                               \ ? './'
+                               \ : fnameescape(expand('%:h')) . '/'<CR>
+nnoremap <Leader>ep :edit <C-r>=fnameescape(getcwd())<CR>/
+nnoremap <Leader>eh :edit <C-r>=fnameescape(expand('~'))<CR>/
+
+" Quick access to files, and reloads, live vimrc, plugins configs, etc...
+nnoremap <Leader>er :source $MYVIMRC<CR>
+nnoremap <Leader>ev :edit $MYVIMRC<CR>
+nnoremap <Leader>ee :call <SID>OpenExtPluginsConfig()<CR>
+nnoremap <Leader>ei :edit $HOME/.config/i3/config<CR>
+nnoremap <Leader>et :edit $HOME/.tmux.conf<CR>
+
+" Easy buffer resizing
+nnoremap <silent> <Leader><Up> :resize +3<CR>
+nnoremap <silent> <Leader><Down> :resize -3<CR>
+nnoremap <silent> <Leader><Left> :vertical resize -3<CR>
+nnoremap <silent> <Leader><Right> :vertical resize +3<CR>
+
+" Easy window navigation
+nnoremap <silent> <Leader>h <C-w>h
+nnoremap <silent> <Leader>j <C-w>j
+nnoremap <silent> <Leader>k <C-w>k
+nnoremap <silent> <Leader>l <C-w>l
+
+
+nnoremap <silent> <Leader>p :bprevious<CR>
+nnoremap <silent> <Leader>n :bnext<CR>
+
+" MAPPINGS: <Leader> }}}
+" MAPPINGS: Arrow keys {{{
+
+" Quickfix navigation
+nnoremap <silent> <Up> :cprev<CR>
+nnoremap <silent> <Down> :cnext<CR>
+
+" Location List navigation
+nnoremap <silent> <Left> :lprev<CR>
+nnoremap <silent> <Right> :lnext<CR>
+
+" MAPPINGS: Arrow keys }}}
+" MAPPINGS: CTRL+... {{{
+
+nnoremap <silent> <C-l> :redraw!<CR>:redrawstatus!<CR>
+
+" Default for C-n and I use for buffer navigation
+" This is the mapping that stays if I don't have CtrlP installed
+nnoremap <C-n> :ls<CR>:buffer<Space>
+nnoremap <silent> <C-p><C-p> :Explore <C-r>=fnameescape(getcwd())<CR><CR>
+nnoremap  <C-p>p :Explore <C-r>=fnameescape(getcwd())<CR>/
+nnoremap <silent> <C-p><C-f>
+                \ :Explore <C-r>=fnameescape(expand('%:p:h'))<CR><CR>
+nnoremap  <C-p>f
+               \ :Explore <C-r>=fnameescape(expand('%:p:h'))<CR>/
+nnoremap <silent> <C-p><C-h> :Explore <C-r>=fnameescape(expand('~'))<CR><CR>
+nnoremap  <C-p>h :Explore <C-r>=fnameescape(expand('~'))<CR>/
+
+" Faster pagination
+nnoremap <silent> <C-e> 5<C-e>
+nnoremap <silent> <C-y> 5<C-y>
+
+" MAPPINGS: CTRL+... }}}
+" MAPPINGS: Function Keys {{{
+
+" Lonf-form mapping to NOP to make it easier to selectively map to something
+" else down the line. YAGNI? maybe, but a trivial YAGNI at that.
+
+" When I need help, I'll call ya
+cnoremap <F1> <NOP>
+inoremap <F1> <NOP>
+nnoremap <F1> <NOP>
+onoremap <F1> <NOP>
+vnoremap <F1> <NOP>
+
+" File > Open > Recent Files...
+cnoremap <F2> <NOP>
+inoremap <F2> <C-c>:call VimRC_OpenOldFilesBuffer()<CR>
+nnoremap <F2> :call VimRC_OpenOldFilesBuffer()<CR>
+onoremap <F2> <NOP>
+vnoremap <F2> :<C-u>call VimRC_OpenOldFilesBuffer()<CR>
+
+" Diff unsaved changes with the version of the file on disk
+cnoremap <F3> <NOP>
+inoremap <silent> <F3> <C-c>:call VimRC_DiffUnsavedChanges()<CR>
+nnoremap <silent> <F3> :call VimRC_DiffUnsavedChanges()<CR>
+onoremap <F3> <NOP>
+vnoremap <silent> <F3> :<C-u>call VimRC_DiffUnsavedChanges()<CR>
+
+cnoremap <F4> <NOP>
+inoremap <F4> <NOP>
+nnoremap <F4> <NOP>
+onoremap <F4> <NOP>
+vnoremap <F4> <NOP>
+
+" Insert timestamp, like good ol' notepad.exe
+cnoremap <F5> <C-r>=strftime('%Y%m%dT%H%M%S')<CR>
+inoremap <F5> <C-r>=substitute(
+                  \ strftime('%Y-%m-%dT%H:%M:%S%z'),
+                  \ '\(..\)$',
+                  \ ':\1',
+                  \ 'g')<CR>
+nnoremap <F5> i<C-r>=substitute(
+                  \ strftime('%Y-%m-%dT%H:%M:%S%z'),
+                  \ '\(..\)$',
+                  \ ':\1',
+                  \ 'g')<CR>
+onoremap <F5> <NOP>
+vnoremap <F5> <NOP>
+
+cnoremap <F6> <NOP>
+inoremap <F6> <NOP>
+nnoremap <F6> <NOP>
+onoremap <F6> <NOP>
+vnoremap <F6> <NOP>
+
+cnoremap <F7> <NOP>
+inoremap <F7> <NOP>
+nnoremap <F7> <NOP>
+onoremap <F7> <NOP>
+vnoremap <F7> <NOP>
+
+cnoremap <F8> <NOP>
+inoremap <F8> <NOP>
+nnoremap <F8> <NOP>
+onoremap <F8> <NOP>
+vnoremap <F8> <NOP>
+
+cnoremap <F9> <NOP>
+inoremap <F9> <NOP>
+nnoremap <F9> <NOP>
+onoremap <F9> <NOP>
+vnoremap <F9> <NOP>
+
+cnoremap <F10> <NOP>
+inoremap <F10> <NOP>
+nnoremap <F10> <NOP>
+onoremap <F10> <NOP>
+vnoremap <F10> <NOP>
+
+cnoremap <F11> <NOP>
+inoremap <F11> <NOP>
+nnoremap <F11> <NOP>
+onoremap <F11> <NOP>
+vnoremap <F11> <NOP>
+
+cnoremap <F12> <NOP>
+inoremap <F12> <NOP>
+nnoremap <F12> <NOP>
+onoremap <F12> <NOP>
+vnoremap <F12> <NOP>
+
+" MAPPINGS: Function Keys }}}
+" MAPPINGS: Magical searches {{{
+
+" make quick aliases for very magic searches
+nnoremap / /\v
+xnoremap / /\v
+
+" but keep sane re-searches
+nnoremap // //
+nnoremap ?? ??
+xnoremap // //
+xnoremap ?? ??
+
+" MAPPINGS: Magical searches }}}
+" MAPPINGS: emacs-like for ins/cmd {{{
+
+" TPOPE's {{{
+" Mappings in this section (until fold-close w/ tag TPOPE's) are sourced from
+" https://github.com/tpope/vim-rsi/
+"
+" And as such carry the Copyrigh notice below. No meaningful edits were
+" performed by me to this code and are limited to line-wrapping, indentation,
+" or capitalization.
+"
+" Copyright 2012 Tim Pope. Distributed under the same terms as Vim itself.
+" See :help license.
+
+inoremap <C-a> <C-o>^
+cnoremap <C-a> <Home>
+
+inoremap <expr> <C-b>
+            \ getline('.') =~ '^\s*$' && col('.') > strlen(getline('.'))
+            \ ? "0\<Lt>C-d>\<Lt>Esc>kJs"
+            \ : "\<Lt>Left>"
+cnoremap <C-b> <Left>
+
+inoremap <expr> <C-d>
+            \ col('.') > strlen(getline('.'))
+            \ ? "\<Lt>C-d>"
+            \ : "\<Lt>Del>"
+cnoremap <expr> <C-d>
+            \ getcmdpos() > strlen(getcmdline())
+            \ ? "\<Lt>C-d>"
+            \ : "\<Lt>Del>"
+
+inoremap <expr> <C-e>
+            \ col('.') > strlen(getline('.')) <Bar><Bar> pumvisible()
+            \ ? "\<Lt>C-e>"
+            \ : "\<Lt>End>"
+
+inoremap <expr> <C-f>
+            \ col('.') > strlen(getline('.'))
+            \ ? "\<Lt>C-f>"
+            \ : "\<Lt>Right>"
+cnoremap <expr> <C-f>
+            \ getcmdpos() > strlen(getcmdline())
+            \ ? &cedit
+            \ : "\<Lt>Right>"
+
+" TPOPE's }}}
+
+" MAPPINGS: emacs-like for ins/cmd }}}
+" MAPPINGS: Exotic F-keys, don't judge me {{{
+
+" I set these codes to be sent by my terminal, the definitions for them are in
+" the respective terminal's configuration which may or may not be distributed
+" with this file(?).
+"
+" - Xresources for URxvt
+"   ~/.config/alacritty/alacritty.yml for alacritty
+"   ~/.config/kitty/kitty.conf for kitty
+
+" Normally these are translated by terminfo. The mappings here are in case
+" xterminfo is not properly set, workaround doesn't work in nvim as per
+" https://github.com/neovim/neovim/issues/2204
+
+" C-Tab is <F32>
+" C-Space is <NUL> (this is the standard, not custom)
+" M-Space is <F33>
+" S-Space is <F34>
+" C-Enter is <F35>
+" M-Enter is <F36>
+" S-Enter is <F37>
+set <F32>=[50~
+set <F33>=[45~
+set <F34>=[46~
+set <F35>=[47~
+set <F36>=[48~
+set <F37>=[49~
+
+" Now we remap them, and if no customization is expected for a specific
+" combination in a specific mode, map them to their original keys as to not
+" break any of my hopes and dreams down the line
+
+cnoremap <F32> <Tab>
+inoremap <F32> <Tab>
+nnoremap <F32> <Tab>
+onoremap <F32> <Tab>
+vnoremap <F32> <Tab>
+
+cnoremap <NUL> <Space>
+inoremap <NUL> <Space>
+nnoremap <NUL> <Space>
+onoremap <NUL> <Space>
+vnoremap <NUL> <Space>
+
+cnoremap <F33> <Space>
+inoremap <F33> <Esc>
+nnoremap <F33> <Space>
+onoremap <F33> <Space>
+vnoremap <F33> <Space>
+
+cnoremap <F34> <Space>
+inoremap <F34> <Space>
+nnoremap <F34> <Space>
+onoremap <F34> <Space>
+vnoremap <F34> <Space>
+
+cnoremap <F35> <CR>
+inoremap <F35> <C-c>:call VimRC_FormatBuffer()<CR>
+nnoremap <silent> <F35> :call VimRC_FormatBuffer()<CR>
+onoremap <F35> <CR>
+vnoremap <F35> =gv
+
+cnoremap <F36> <CR>
+inoremap <F36> <CR>
+nnoremap <F36> <CR>
+onoremap <F36> <CR>
+vnoremap <F36> <CR>
+
+cnoremap <F37> <CR>
+inoremap <F37> <CR>
+nnoremap <F37> <CR>
+onoremap <F37> <CR>
+vnoremap <F37> <CR>
+
+" MAPPINGS: Exotic F-keys, don't judge me }}}
+" MAPPINGS: Other {{{
+
+if has('nvim')
+    tmap <silent> <Esc> <C-\><C-n>
+endif
+
+" prevent accidentally entering into EX mode
+nnoremap Q <NOP>
+
+nnoremap <silent> *
+                \ :let w:saved_view = winsaveview()<CR>
+                \ *
+                \ :call winrestview(w:saved_view)<CR>:echo<CR>
+
+nmap go <Plug>AddLineBelow
+nmap gO <Plug>AddLineAbove
+
+" Mappings inspired on the old vim-unimpaired (RIP, it has horrible maps now)
+nnoremap yo :call VimRC_PasteEnter()<CR>o
+nnoremap yO :call VimRC_PasteEnter()<CR>O
+nnoremap coc :setlocal cursorline!<CR>
+nnoremap cod :call VimRC_ToggleDiffthis()<CR>
+nnoremap col :setlocal list!<CR>
+
+" find merge conflict markers
+nmap <silent> com /\v^[<=>]{7}( .*\|$)<CR>
+
+nnoremap con :call VimRC_ToggleNumAndSign()<CR>
+nnoremap cop :setlocal paste!<CR>
+nnoremap cor :setlocal relativenumber!<CR>
+nnoremap cos :setlocal spell!<CR>
+nnoremap cou :setlocal cursorcolumn!<CR>
+nnoremap cov :call VimRC_ToggleVirtualedit()<CR>
+nnoremap cow :setlocal wrap!<CR>
+nnoremap cox :call VimRC_ToggleCrosshair()<CR>
+nnoremap coy :call VimRC_ToggleSyntax()<CR>
+
+nnoremap <BackSpace> <C-^>
+nnoremap <C-h> <C-^>
+
+" Make Y yank to the end of the line
+nnoremap <silent> Y y$
+
+" Add the word to the second spellfile (normally local)
+nnoremap zG 2zg
+
+" Select the text last put (pasted)
+nnoremap gV `[v`]
+
+" . and @ to work on visual mode
+xnoremap . :normal! .<CR>
+xnoremap @ :<C-u>call <SID>ExecuteMacroOverVisualRange()<CR>
+
+" matches are easier to view when in the middle of the window
+nnoremap n nzzzv
+nnoremap N Nzzzv
+
+" Same when jumping around
+nnoremap g; g;zvzz
+nnoremap g, g,zvzz
+nnoremap <C-o> <C-o>zvzz
+nnoremap <C-i> <C-i>zvzz
+
+" Indent/unindent in visual mode and keep selection
+xnoremap < <gv
+xnoremap > >gv
+
+" make zO open all folds and return the cursor to the previous position when in
+" normal, zC closes all the folds and returs the cursor
+nnoremap <silent> zO :call <SID>Preserve('normal! ggVGzO')<CR>
+nnoremap <silent> zC :call <SID>Preserve('normal! ggVGzC')<CR>
+
+" MAPPINGS: Other }}}
+
+" AUTOCOMMANDS: Autobots, roll out! {{{
+
+" only show cursorline in the current window and in normal mode
+augroup vimrc_cursorline
+    autocmd!
+    autocmd WinLeave,InsertEnter * setlocal nocursorline
+    autocmd WinEnter,InsertLeave * setlocal cursorline
+augroup end
+
+augroup vimrc_general
+    autocmd!
+
+    " Quickfix's stubborn statusline...
+    autocmd FileType qf
+                \ let &statusline=s:my_statusline
+
+    " turn off any existing search highlights (for now)
+    autocmd VimEnter * nohlsearch
+
+    " view save/restore
+    autocmd BufWinEnter *
+                \  let b:old_pwd = getcwd()
+                \| silent! loadview
+                \| execute 'lcd ' . b:old_pwd
+                \| unlet b:old_pwd
+                \| if &ft != 'netrw'
+                \|     set bufhidden=hide
+                \| endif
+                \| execute 'normal! zvzz'
+    autocmd BufWinLeave * silent! mkview
+
+    " reset terminal colors upon quitting
+    autocmd VimLeave * !echo -ne "\x1b[0m"
+augroup end
+
+if has('nvim')
+    augroup vimrc_term
+        autocmd!
+        autocmd TermOpen * setlocal nonumber norelativenumber signcolumn=no
+    augroup end
+endif
+
+" Only show trailing whitespace when not in insert mode
+augroup vimrc_trailing_chars
+    autocmd!
+    autocmd InsertEnter * call <SID>ListcharsToggleTrail('off')
+    autocmd InsertLeave * call <SID>ListcharsToggleTrail('on')
+augroup end
+
+" Merge conflict markers
+augroup vimrc_vcs_conflict
+    autocmd!
+    autocmd VimEnter * match ErrorMsg /\v^[\<\=\>]{7}( .*|$)/
+augroup end
+
+" AUTOCOMMANDS: Autobots, roll out! }}}
+
+" EXTRA: Local and Ext Plugin Config loading {{{
+
+" Set here and not on autoload/ or after/ for when re-sourcing
+" Anything that's not in this vimrc (e.g. plugin/* stuff) should go either in
+" ext_plugin_settings, or into these.
+"
+" the rationale for this is to keep the .vimrc runable without the need of any
+" other files or folders with a sane configuration, yet enrichable in case the
+" extensions exist. Allows for this file to be deployed as  a portable 'tiny'
+" vimrc. For whoever has a very relaxed definition of 'tiny'.
+
+runtime! configs/commands.vim
+runtime! configs/mappings.vim
+runtime! configs/autocommands.vim
+
+if exists('*ext_plugin_settings#set_variables')
+    call ext_plugin_settings#set_variables()
+endif
+if exists('*ext_plugin_settings#set_commands')
+    call ext_plugin_settings#set_commands()
+endif
+
+if exists('g:already_ran_vimrc') &&
+ \ exists('*ext_plugin_settings#set_mappings')
+    call ext_plugin_settings#set_mappings()
+endif
+
+augroup vimrc_load_mappings
+    autocmd!
+    autocmd VimEnter *
+          \  runtime! configs/mappings.vim
+          \| if exists('ext_plugin_settings#set_mappings')
+          \|     call ext_plugin_settings#set_mappings()
+          \| endif
+augroup end
+
+" EXTRA: Local and Ext Plugin Config loading }}}
+
+let g:already_ran_vimrc = 'yup'
+" vim: foldmethod=marker foldenable
