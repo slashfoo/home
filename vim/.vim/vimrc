@@ -241,9 +241,9 @@ function! VimRC_OpenOldFilesBuffer() " {{{
     normal! gg
     nnoremap <silent> <buffer> <CR>
                              \ :let g:oldfiles_buffer = bufnr('%')<CR>
-                             \ :edit <C-r>=fnameescape(getline('.'))<CR><CR>
-                             \ :bwipeout <C-r>=g:oldfiles_buffer<CR><CR>
-                             \ :unlet! g:oldfiles_buffer<CR>
+                             \:edit <C-r>=fnameescape(getline('.'))<CR><CR>
+                             \:bwipeout <C-r>=g:oldfiles_buffer<CR><CR>
+                             \:unlet! g:oldfiles_buffer<CR>
 endfunction " }}}
 function! VimRC_PasteEnter() " {{{
     setlocal paste
@@ -259,9 +259,7 @@ function! VimRC_PasteExit() " {{{
     augroup end
 endfunction " }}}
 function! VimRC_RepeatMaybe(what_to_repeat) " {{{
-    if exists('*repeat#set')
-        call repeat#set(a:what_to_repeat)
-    endif
+    silent! call repeat#set(a:what_to_repeat)
 endfunction " }}}
 function! VimRC_ToggleCrosshair() " {{{
     if &cursorline
@@ -675,12 +673,13 @@ command! -nargs=0 Oldfiles call VimRC_OpenOldFilesBuffer()
 
 " MAPPINGS: <Plug> {{{
 
-nmap <silent> <Plug>AddLineBelow
+nnoremap <silent> <Plug>AddLineBelow
             \ :call VimRC_AddLine('below')<CR>
-            \ :call VimRC_RepeatMaybe("\<Plug>AddLineBelow")<CR>
-nmap <silent> <Plug>AddLineAbove
+            \:call VimRC_RepeatMaybe("\<Plug>AddLineBelow")<CR>
+nnoremap <silent> <Plug>AddLineAbove
             \ :call VimRC_AddLine('above')<CR>
-            \ :call VimRC_RepeatMaybe("\<Plug>AddLineAbove")<CR>
+            \:call VimRC_RepeatMaybe("\<Plug>AddLineAbove")<CR>
+
 
 " MAPPINGS: <Plug> }}}
 " MAPPINGS: Filename Usage {{{
@@ -1005,10 +1004,10 @@ endif
 " prevent accidentally entering into EX mode
 nnoremap Q <NOP>
 
-nnoremap <silent> *
-                \ :let w:saved_view = winsaveview()<CR>
-                \ *
-                \ :call winrestview(w:saved_view)<CR>:echo<CR>
+nnoremap <silent> * :let w:saved_view = winsaveview()<CR>
+          \*
+          \:call winrestview(w:saved_view)<CR>
+          \:echo<CR>
 
 nmap go <Plug>AddLineBelow
 nmap gO <Plug>AddLineAbove
@@ -1093,8 +1092,7 @@ augroup vimrc_general
     autocmd!
 
     " Quickfix's stubborn statusline...
-    autocmd FileType qf
-                \ let &statusline=s:my_statusline
+    autocmd FileType qf let &statusline=s:my_statusline
 
     " turn off any existing search highlights (for now)
     autocmd VimEnter * nohlsearch
