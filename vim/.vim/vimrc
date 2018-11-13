@@ -1072,6 +1072,16 @@ nnoremap <silent> zC :call <SID>Preserve('normal! ggVGzC')<CR>
 
 " AUTOCOMMANDS: Autobots, roll out! {{{
 
+" if able to conceal, do it!
+augroup vimrc_conceal
+    autocmd!
+    autocmd BufWinEnter *
+                \  if has('conceal')
+                \|     setlocal conceallevel=2
+                \|     setlocal concealcursor=
+                \| endif
+augroup end
+
 " only show cursorline in the current window and in normal mode
 augroup vimrc_cursorline
     autocmd!
@@ -1138,7 +1148,6 @@ augroup end
 " extensions exist. Allows for this file to be deployed as  a portable 'tiny'
 " vimrc. For whoever has a very relaxed definition of 'tiny'.
 
-runtime! configs/commands.vim
 runtime! configs/mappings.vim
 runtime! configs/autocommands.vim
 
