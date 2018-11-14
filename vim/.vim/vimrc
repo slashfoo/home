@@ -1165,7 +1165,7 @@ augroup vimrc_load_mappings
     autocmd!
     autocmd VimEnter *
           \  runtime! configs/mappings.vim
-          \| if exists('ext_plugin_settings#set_mappings')
+          \| if exists('*ext_plugin_settings#set_mappings')
           \|     call ext_plugin_settings#set_mappings()
           \| endif
 augroup end
