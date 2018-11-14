@@ -1,0 +1,681 @@
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+priority 0
+clearsnippets
+
+global !p
+import os
+import subprocess
+
+def pkg_name(filename):
+    abspath = os.path.abspath(filename)
+    parent_dir = os.path.dirname(abspath)
+    pkg = os.path.basename(parent_dir)
+    return pkg
+
+def pkg_name_w_suffix(filename):
+    pkg = pkg_name(filename)
+    if filename.endswith('_test.go'):
+        return pkg + '_test'
+    return pkg
+
+def imports_test_aware(filename):
+    imports = []
+    if filename.endswith('_test.go'):
+        imports = ['"strings"', '"testing"', '']
+    retval = "\n\t".join([str(i) for i in imports])
+    return retval
+
+def golang_import_str(filepath):
+    importstr = subprocess.check_output([
+        'go-pkg-importstr',
+        filepath
+    ]).decode('utf-8')
+    if importstr.endswith('\n'):
+        importstr = importstr[:-1]
+    return importstr
+
+endglobal
+
+
+priority 1
+
+snippet /^pa/ "package ... (with header)" r
+// TODO(`!v $USER`): fill documentation string for package $1
+
+// Package $1 provides ...
+package ${1:`!p snip.rv = pkg_name_w_suffix(path)`}
+
+$0
+endsnippet
+
+snippet /^p/ "package ..." r
+package ${1:`!p snip.rv = pkg_name_w_suffix(path)`}
+
+$0
+endsnippet
+
+snippet /^imp/ "import ..." r
+import "${1:log}"
+
+$0
+endsnippet
+snippet /^im/ "import (...)" r
+import (
+	"${1:log}"
+)
+
+$0
+endsnippet
+snippet /^imT/ "Testing: import (...)" r
+import (
+	"`!p snip.rv = golang_import_str(path)`"
+	"strings"
+	"testing"
+)
+
+$0
+endsnippet
+snippet /^imt/ "Testing w/testify: import (...)" r
+import (
+	"`!p snip.rv = golang_import_str(path)`"
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
+
+$0
+endsnippet
+
+snippet df "defer funcName()" b
+defer ${1:funcName}(${2:funcArgs})
+$0
+endsnippet
+snippet dff "defer func(...) {...}(...)" b
+defer func(${1:params}) {
+	${0:${VISUAL:fmt.Println("deferred anonymous function Body!")}}
+}(${2:args})
+endsnippet
+snippet dfb "defer func() {...}()" b
+defer func() {
+	${0:${VISUAL:fmt.Println("deferred anonymous function Body!")}}
+}()
+endsnippet
+snippet dfr "defer func() { if err := recover; err != nil {...} }" b
+defer func() {
+	if err := recover(); err != nil {
+		${0:${VISUAL:log.Printf("Could not recover. Got runtime error: %v", err)}}
+	}
+}()
+endsnippet
+
+
+snippet go "go funcName()" b
+go ${1:funcName}(${2:funcArgs})
+$0
+endsnippet
+snippet gof "go func(...){ ... }(...)" b
+go func(${1:params}) {
+	${0:${VISUAL:fmt.Println("anonymous gofunc body!")}}
+}(${2:args})
+endsnippet
+snippet gob "go func(){ ... }()" b
+go func() {
+	${0:${VISUAL:fmt.Println("anonymous gofunc body!")}}
+}()
+endsnippet
+
+snippet af "func(...) {...}" w
+func(${1:params}) {
+	${2:${VISUAL:fmt.Println("Anonymous function Body!")}}
+}
+endsnippet
+snippet afn "func(...) {...}(...)" w
+func(${1:params}) {
+	${2:${VISUAL:fmt.Println("Anonymous function Body!")}}
+}(${0:${1/(.+)/\/* args *\//}})
+endsnippet
+snippet :fn " funcName := func(...) {...}" b
+${1:funcName} := func(${2:params}) {
+	${3:${VISUAL:fmt.Println("Anonymous function Body!")}}
+}
+$0
+endsnippet
+snippet fun "func(){...}" w
+func () {
+	${0:${VISUAL}}
+}
+endsnippet
+
+
+snippet fn "func funcName(...) (T, error) {...}" b
+func ${1:funcName}(${2:firstParam})${3/(.+)/ /}${3:(${4:retType}${5:, error})} {
+	${0:${VISUAL:fmt.Println("Function Body!")}}
+}
+endsnippet
+snippet /^fm/ "func main() {...}" r
+func main() {
+	${0:${VISUAL:fmt.Println("Hello world!")}}
+}
+endsnippet
+snippet /^fi/ "func init() {...}" r
+func init() {
+	${0:${VISUAL:fmt.Println("Hello from init function!")}}
+}
+endsnippet
+
+
+snippet co "Constant declaration" b
+const ${1:constant}${2/(.+)/ /}${2:type} = ${3:iota}$0
+endsnippet
+snippet con "Constants block declaration" b
+const (
+	${1:constant}${2/(.+)/ /}${2:type} = ${3:iota}
+	$0
+)
+endsnippet
+
+snippet typei "type T interface { ... }" b
+// TODO(`!v $USER`): fill documentation string for interface $1
+
+// $1 ...
+type ${1:interfaceName} interface {
+	${2:MethodName}(${3:params})${4/(.+)/ /}${4:retType}
+	$0
+}
+endsnippet
+snippet type "type T struct { ... }" b
+// TODO(`!v $USER`): fill documentation string for struct $1
+
+// $1 ...
+type ${1:structName} struct {
+	${2:AttrName} ${3:AttrType}
+	$0
+}
+endsnippet
+
+
+snippet in "if v, ok := map[key]; ok {...}" bw
+if v, ok := ${1:haystack}[${2:needle}]; ok {
+	${3:${VISUAL:fmt.Println("value", v, "found in map")}}
+}$0
+endsnippet
+
+snippet ma "newmap = map[type]type{...}" b
+${1:mymap} := map[${2:string}]${3:int}{
+	${4:${VISUAL:"FirstKey": 0,}}
+}$0
+endsnippet
+snippet map "map[keytype]valtype" w
+map[${1:string}]${2:int}$0
+endsnippet
+
+snippet del "delete(mymap, key)" b
+delete(${1:mymap}, ${2:"key"})
+endsnippet
+snippet idel "if v, ok := ... delete(mymap, key)" b
+if ${3:v}, ok := $1[$2]; ok {
+	delete(${1:haystack}, ${2:needle})
+	$0
+}
+endsnippet
+
+snippet ap "slicename = append(slicename, value)" b
+${1:slicename} = append($1, ${2:value})$0
+endsnippet
+snippet app "append(slicename, value)" w
+append(${1:slicename}, ${2:value})$0
+endsnippet
+
+snippet if "if condition { ... }" w
+if ${1:${2:/* condition */} }{
+	${3:${VISUAL:}}
+}$0
+endsnippet
+snippet ife "if condition { ... } else { ... }" w
+if ${1:/* condition */} {
+	${3:${VISUAL}}
+} else {
+	${0}
+}
+endsnippet
+snippet eli "else if condition { ... }" w
+else if ${1:/* condition */} {
+	${2:${VISUAL}}
+}$0
+endsnippet
+snippet el "else { ... }" w
+else {
+	${1:${VISUAL}}
+}$0
+endsnippet
+
+snippet ifo "if _, ok := operation; ok { ... }" b
+if ${2:_}, ok := ${1:operation}; ok {
+	${3:${VISUAL}}
+}$0
+endsnippet
+snippet ifr "if _, err := operation; err != nil { ... }" b
+if ${1:${3:${4:_}, }err := ${2:operation}; }err != nil {
+	${5:${VISUAL:return err}}
+}
+$0
+endsnippet
+
+snippet for "for i := 0; i < N; i++ { ... }" b
+for ${1:${2:i} := 0; $2 < ${3:count}; $2++ }{
+	${0:${VISUAL:fmt.Println("loop body")}}
+}
+endsnippet
+snippet forr "for i, v := range ... { ... }" b
+for ${1:i}, ${2:v} := range ${3:collectionName} {
+	${0:${VISUAL:fmt.Println("loop body")}}
+}
+endsnippet
+
+
+snippet err "if err != nil { ... }" b
+if err != nil {
+	${1:${VISUAL:return fmt.Errorf("message here")}}
+}
+$0
+endsnippet
+snippet errn "if err != nil { return ..., err }" b
+if err != nil {
+	return ${1:nil}${1/(.+)/,/ }${2:fmt.Errorf(${3:"message here"})}
+}
+$0
+endsnippet
+snippet errl "if err != nil { log.Fatal(...) }" b
+if err != nil {
+	log.Fatal(err)
+}
+$0
+endsnippet
+snippet errp "if err != nil { panic(...) }" b
+if err != nil {
+	panic(${1})
+}
+$0
+endsnippet
+
+snippet errt "if err != nil { t.Errorf(...) }" b
+if err != nil {
+	t.Errorf(${1:"${0:message}"})
+}
+endsnippet
+snippet errf "if err != nil { t.Fatalf(...) }" b
+if err != nil {
+	t.Fatalf(${1:"${0:message}"})
+}
+endsnippet
+
+snippet pan "panic(...)" b
+panic(${1:"${2:msg}"})$0
+endsnippet
+
+snippet sel "select { ... }" b
+select {
+case ${1:v}${2:, ok} := <-${3:chan1}:
+	${2/(.+)/if !ok {
+		log.Panic("channel was closed")
+	}
+	/}${0:${VISUAL}}
+}
+endsnippet
+snippet sw "switch ... { ... }" b
+switch ${2:statement}${2/(.+)/; /}${3:expression}${3/(.+)/ /}{
+case ${4:caseCondition}:
+	${0:${VISUAL}}
+}
+endsnippet
+snippet swt "switch x.(type) { ... }" b
+switch ${3:statement}${3/(.+)/; /}${1:newValVar} := ${1:varName}.(type) {
+case ${4:typeName}:
+	${0:${VISUAL:fmt.Println("it matches typeName!")}}
+}
+endsnippet
+snippet ca "case caseCondition: ..." b
+case ${2:${3:value} ${4::= <-${5:chan1}}}:
+	${2:return ${3:value}}
+endsnippet
+snippet de "default: ..." b
+default:
+	${1:return ${2:value}}
+endsnippet
+
+snippet var "var x Type = value"
+var ${1:varName} ${2:varType}${3: = ${0:value}}
+$0
+endsnippet
+snippet vars "var ( ... )"
+var (
+	${1:varName} ${2:varType}${3: = ${0:value}}
+	$0
+)
+endsnippet
+
+snippet mk "make([]valueType, length)" w
+make(${1:[]${2:string}}, ${3:0})
+endsnippet
+
+snippet ch "chan Type" w
+chan ${2:int}
+endsnippet
+snippet mkc "make(chan Type, bufLen)" w
+${1:myChan} := make(chan ${2:int}, ${3:bufferLength})
+$0
+endsnippet
+
+snippet fs "fmt.Sprintf(...)" w
+fmt.Sprintf(${1:"${2:${VISUAL}}"})
+endsnippet
+snippet fe "fmt.Errorf(...)" b
+fmt.Errorf(${1:"${2:${VISUAL}}"})
+endsnippet
+snippet fp "fmt.Print(...)" w
+fmt.Print(${1:"${2:${VISUAL}}"})
+endsnippet
+snippet ff "fmt.Printf(...)" w
+fmt.Printf("$1 = %#v\n", ${1:${VISUAL:var}})
+endsnippet
+snippet fl "fmt.Println(...)" w
+fmt.Println("${1:${VISUAL}}")
+endsnippet
+
+snippet lp "log.Print(...)" w
+log.Print(${1:"${2:${VISUAL}}"})
+endsnippet
+snippet lf "log.Printf(...)" w
+log.Printf("$1 = %#v\n", ${1:${VISUAL:var}})
+endsnippet
+snippet ll "log.Println(...)" w
+log.Println(${1:"${2:${VISUAL}}"})
+endsnippet
+snippet lfp "log.Fatal(...)" w
+log.Fatal(${1:"${2:${VISUAL}}"})
+endsnippet
+snippet lff "log.Fatalf(...)" w
+log.Fatalf("${1:${VISUAL:var}}(%T) = %+v\n", $1, $1)
+endsnippet
+snippet lfl "log.Fatalln(...)" w
+log.Fatalln(${1:"${2:${VISUAL}}"})
+endsnippet
+snippet lpp "log.Panic(...)" w
+log.Panic(${1:"${2:${VISUAL}}"})
+endsnippet
+snippet lpf "log.Panicf(...)" w
+log.Pancif("${1:${VISUAL:var}}(%T) = %+v\n", $1, $1)
+endsnippet
+snippet lpl "log.Panicln(...)" w
+log.Panicln(${1:"${2:${VISUAL}}"})
+endsnippet
+
+snippet me "func (receiver T) Method(params) (T, error) {...}" b
+func (${1:receiver} ${2:receiverType}) ${3:MethodName}(${4:params}) ${5:(${6:retType}, error)} {
+	${0:${VISUAL:fmt.Println("Method body")}}
+}
+endsnippet
+snippet gl "var globals = struct{...}{...}" b
+var ${1:globals} = struct{
+	${2:globName} ${3:globType}
+}{
+	$2: ${4:globVal}
+}
+endsnippet
+
+snippet tf "func TestFunc(...)" b
+func Test$2(t *testing.T) {
+	want := ${4:"Desired return Value"}
+	if got := ${1:`!p snip.rv = pkg_name(path)`}.${2:FuncName}(${3:args}); got != want {
+		t.Errorf("got = %#v; want = %#v", got, want)
+	}
+}
+endsnippet
+snippet tc "TestCase" b
+{"${1:Test Case Name}", args{${2:"firstArgVal"}}, ${3:"Expected retVal"}, ${4:expectError}},$0
+endsnippet
+
+snippet tT "TestTable + func TestFunc(...)" b
+func Test$2(t *testing.T) {
+	testedFunc := ${1:`!p snip.rv = pkg_name(path)`}.${2:FuncName}
+	type args struct {
+		${3:firstArg} ${4:fArgType}
+	}
+	tests := []struct {
+		name      string
+		args      args
+		expected  ${5:returnType}
+		expectErr bool
+	}{
+		{"${6:Test Case Name}", args{${7:"firstArgVal"}}, ${8:"Expected retVal"}, ${9:false}},
+		$0
+	}
+	msgFormat := strings.Join([]string{
+		"Failed test %#v of \"$1.$2(…)\" with unexpected return value(s).",
+		"got     : %#v",
+		"expected: %#v",
+	}, "\n")
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got${10/(.+)/, /}${10:err} := testedFunc(tc.args.${11:firstArg})
+			${10/(.+)/if tc.expectErr {
+				if err == nil {
+					t.Errorf("Failed test %#v expected error, but got err == nil.", tc.name)
+				} else if got != "" {
+					t.Errorf("Failed test %#v expected error and `got` has non-zero Value = %#v.", tc.name, got)
+				}
+			} else if err != nil {
+				t.Errorf("Failed test %#v with unexpected error \"%s\".", tc.name, err)
+			} else /}if got != tc.expected {
+				t.Errorf(msgFormat, tc.name, got, tc.expected)
+			}
+		})
+	}
+}
+endsnippet
+snippet tt "w/ testify: TestTable + func TestFunc(...)" b
+func Test$2(t *testing.T) {
+	testedFunc := ${1:`!p snip.rv = pkg_name(path)`}.${2:FuncName}
+	type args struct {
+		${3:firstArg} ${4:fArgType}
+	}
+	tests := []struct {
+		name      string
+		args      args
+		expected  ${5:returnType}
+		expectErr bool
+	}{
+		{"${6:Test Case Name}", args{${7:"firstArgVal"}}, ${8:"Expected retVal"}, ${9:false}},
+		$0
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got${9/(.+)/, /}${9:err} := testedFunc(tc.args.${10:firstArg})
+			${9/(.+)/if tc.expectErr {
+				if assert.Error(t, err) {
+					assert.Equal(t, got, "", "`got` variable has non-zero value.")
+				}
+			} else if assert.NoError(t, err) {
+				/}assert.Equal(t, got, tc.expected, "Unexpected return value(s).")${9/(.+)/
+			}/}
+		})
+	}
+}
+endsnippet
+
+snippet ex "func ExampleFunc() {...}" b
+func Example${1:FuncName}() {
+	${0:${VISUAL}}
+	// Output:${2/(.+)/ /}${2:}
+}
+endsnippet
+
+snippet be "BenchmarkFunc(...) {...}" b
+func Benchmark$2(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		${1:`!p snip.rv = pkg_name(path)`}.${2:FuncName}($3)
+	}
+}
+$0
+endsnippet
+
+snippet bt "BenchTable + func BenchmarkFunc(...)" b
+func Benchmark$2(b *testing.B) {
+	testedFunc := ${1:`!p snip.rv = pkg_name(path)`}.${2:FuncName}
+	type args struct {
+		${3:firstArg} ${4:fArgType}
+	}
+	tests := []struct {
+		name     string
+		args     args
+	}{
+		{"${5:Test Case Name}", args{${6:"firstArgVal"}}},
+		$0
+	}
+	for _, bc := range tests {
+		b.Run(bc.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				testedFunc(bc.args.${7:firstArg})
+			}
+		})
+	}
+}
+endsnippet
+
+snippet hello "Hello world!" b
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	fmt.Println("Hello, world!")
+}
+endsnippet
+
+# new handler
+# marshal to json with alias
+
+# Cobra snippets {{{
+
+snippet c.im "cobra specific imports" b
+import (
+	"os"
+	"strings"${1/(.+)/
+	"/}${1:net}${1/(.+)/"/}${2/(.+)/
+	"/}${2:time}${2/(.+)/"/}
+
+	"github.com/spf13/cobra"
+)$0
+endsnippet
+snippet c.p "cmd specific import" b
+"`!p snip.rv = golang_import_str(path)`${1:/${2:cmd}}"$0
+endsnippet
+
+
+snippet c.fi "cobra specific func init() {...}" b
+func init() {
+	cobra.EnableCommandSorting = false
+	cobra.EnablePrefixMatching = false
+	cobra.OnInitialize(${1:func(){
+		${0:${VISUAL}}
+	}})
+	${2:rootCmd}.PersistentFlags().SortFlags = false
+	$2.Flags().SortFlags = false
+}
+endsnippet
+snippet c.fm "cobra specific func main() {...}" b
+func main() {
+	cmd.Execute()
+}
+endsnippet
+snippet c.fe "cobra.Command's Execute()" b
+func ${2:Execute}() {
+	if err := ${1:rootCmd}.Execute(); err != nil {
+		os.Exit(1)
+	}
+}$0
+endsnippet
+
+snippet c.b "cmd.Flags().BoolVarP(...)" w
+${1:rootCmd}.${2:Persistent}Flags().Bool${3/(.+)/Var/}${6/(.+)/P/}(${3/(.+)/&/}${3:boolVar}${3/(.+)/, /}"${5:$3}", ${6:"${7:`!p snip.rv = t[5][0:1].lower()`}", }${8:false}, "${9:Help message for --$5.}")
+endsnippet
+snippet c.c "cmd.Flags().CountVarP(...)" w
+${1:rootCmd}.${2:Persistent}Flags().Count${3/(.+)/Var/}${6/(.+)/P/}(${3/(.+)/&/}${3:countVar}${3/(.+)/, /}"${5:$3}", ${6:"${7:`!p snip.rv = t[5][0:1].lower()`}", }"${8:Help message for --$5.}")
+endsnippet
+snippet c.d "cmd.Flags().DurationVarP(...)" w
+${1:rootCmd}.${2:Persistent}Flags().Duration${3/(.+)/Var/}${6/(.+)/P/}(${3/(.+)/&/}${3:durationVar}${3/(.+)/, /}"${5:$3}", ${6:"${7:`!p snip.rv = t[5][0:1].lower()`}", }${8:0} * time.${9:Second}, "${10:Help message for --$5.}")
+endsnippet
+snippet c.s "cmd.Flags().StringVarP(...)" w
+${1:rootCmd}.${2:Persistent}Flags().String${3/(.+)/Var/}${6/(.+)/P/}(${3/(.+)/&/}${3:stringVar}${3/(.+)/, /}"${5:$3}", ${6:"${7:`!p snip.rv = t[5][0:1].lower()`}", }"${8}", "${9:Help message for --$5.}")
+endsnippet
+snippet c.ss "cmd.Flags().StringSliceVarP(...)" w
+${1:rootCmd}.${2:Persistent}Flags().StringSlice${3/(.+)/Var/}${6/(.+)/P/}(${3/(.+)/&/}${3:stringSliceVar}${3/(.+)/, /}"${5:$3}", ${6:"${7:`!p snip.rv = t[5][0:1].lower()`}", }[]string{${8}}, "${9:Help message for --$5.}")
+endsnippet
+snippet c.f "cmd.Flags().Float64VarP(...)" w
+${1:rootCmd}.${2:Persistent}Flags().Float${3:64}${4/(.+)/Var/}${7/(.+)/P/}(${4/(.+)/&/}${4:floatVar}${4/(.+)/, /}"${6:$4}", ${7:"${8:`!p snip.rv = t[6][0:1].lower()`}", }${9:0.00}, "${10:Help message for --$6.}")
+endsnippet
+snippet c.i "cmd.Flags().Int64VarP(...)" w
+${1:rootCmd}.${2:Persistent}Flags().Int${3:64}${4/(.+)/Var/}${7/(.+)/P/}(${4/(.+)/&/}${4:intVar}${4/(.+)/, /}"${6:$4}", ${7:"${8:`!p snip.rv = t[6][0:1].lower()`}", }${9:0}, "${10:Help message for --$6.}")
+endsnippet
+
+snippet c.a "cmd.Flags().IPVarP(...)" w
+${1:rootCmd}.${2:Persistent}Flags().IP${3/(.+)/Var/}${6/(.+)/P/}(${3/(.+)/&/}${3:ipVar}${3/(.+)/, /}"${5:$3}", ${6:"${7:`!p snip.rv = t[5][0:1].lower()`}", }net.ParseIP("${8:127.0.0.1}"), "${9:Help message for --$5.}")
+endsnippet
+snippet c.as "cmd.Flags().IPSliceVarP(...)" w
+${1:rootCmd}.${2:Persistent}Flags().IPSlice${3/(.+)/Var/}${6/(.+)/P/}(${3/(.+)/&/}${3:ipSliceVar}${3/(.+)/, /}"${5:$3}", ${6:"${7:`!p snip.rv = t[5][0:1].lower()`}", }[]net.IP{net.ParseIP("${8:127.0.0.1}")}, "${9:Help message for --$5.}")
+endsnippet
+snippet c.n "cmd.Flags().IPNetVarP(...)" w
+_, ${10:defaultIPNetVal}, _ := net.ParseCIDR("${8:127.0.0.1}/${9:32}")
+${1:rootCmd}.${2:Persistent}Flags().IPNet${3/(.+)/Var/}${6/(.+)/P/}(${3/(.+)/&/}${3:ipNetVar}${3/(.+)/, /}"${5:$3}", ${6:"${7:`!p snip.rv = t[5][0:1].lower()`}", }*$10, "${11:Help message for --$5.}")
+endsnippet
+snippet c.m "cmd.Flags().IPMaskVarP(...)" w
+${1:rootCmd}.${2:Persistent}Flags().IPMask${3/(.+)/Var/}${6/(.+)/P/}(${3/(.+)/&/}${3:ipMaskVar}${3/(.+)/, /}"${5:$3}", ${6:"${7:`!p snip.rv = t[5][0:1].lower()`}", }net.CIDRMask(${8:64},net.IPv${9:6}len*8), "${10:Help message for --$5.}")
+endsnippet
+
+snippet c.fn "func(cmd *cobra.Command, args []string) error {...}" w
+func${1/(.+)/ /}${1:funcName}(cmd *cobra.Command, args []string)${2: error} {
+	${2/(.+)/return nil/}
+}
+endsnippet
+
+snippet c.cmd "&cobra.Command{...}" w
+&cobra.Command{
+	Use: \`${1:`!p snip.rv = snip.fn[:-3] if snip.fn.endswith('.go') else snip.fn`} [FLAGS]${2/(.+)/ /}${2:[${3:ARGUMENT} ...]}\`,
+	Short: "${4:A brief description of your application}",
+	Long: \`${5:A longer description that may span multiple lines.}\`,
+	Example: strings.Join([]string{
+		"  ${6:This is a test.}",
+		"",
+		"Arguments:",
+		"  $3: ${7:This is a test too.}",
+	}, "\n"),${8/(.+)/
+	Version: "/}${8:v0.1.0}${8/(.+)/",/}
+	DisableFlagsInUseLine: true,
+	SilenceUsage:          true,
+	DisableAutoGenTag:     true,
+	TraverseChildren:      true,
+	Args:                  ${9:cobra.ArbitraryArgs},  // validates arguments
+	Run${11/(.+)/E/}: ${10:func(cmd *cobra.Command, args []string)${11: error} {
+		${12:${VISUAL}}${11/(.+)/
+		return nil/}
+	}},
+}$0
+endsnippet
+
+# }}}
+
+# vim: ft=snippets foldmethod=marker foldenable

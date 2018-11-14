@@ -1,0 +1,205 @@
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+priority 0
+clearsnippets
+
+priority 1
+
+snippet once "Include header once only guard" b
+#ifndef ${1:`!p
+if not snip.c:
+	import random, string
+	name = re.sub(r'[^A-Za-z0-9]+','_', snip.fn).upper()
+	rand = ''.join(random.sample(string.ascii_letters+string.digits, 8))
+	snip.rv = ('%s__%s' % (name,rand)).upper()
+else:
+	snip.rv = snip.c`}
+#define $1
+
+${0:${VISUAL}}
+
+#endif /* ifndef $1 */
+endsnippet
+
+snippet def "#define ..." b
+#define ${1:SYMBOL} ${2:value}
+$0
+endsnippet
+
+snippet ndef "#ifndef ... #define ... #endif" b
+#ifndef $1
+#define ${1:SYMBOL} ${2:value}
+#endif /* ifndef $1 */
+endsnippet
+
+snippet inc "#include <...>" b
+#include <${1:stdio}.h>
+$0
+endsnippet
+
+snippet ind "#include <debug.h>" b
+#include <debug.h>
+$0
+endsnippet
+
+snippet Inc "#Include “...”" b
+#include "${1:`!p snip.rv = snip.basename`}.h"
+$0
+endsnippet
+
+snippet main "int main..." b
+int main(int argc, char *argv[const]) {
+	$0
+
+	return 0;
+}
+endsnippet
+
+snippet fund "Function declaration" b
+${1:void} ${2:function_name}(${3})${4: __attribute__ ((noreturn))};$0
+endsnippet
+snippet funi "function inmplementation" b
+${1:void} ${2:function_name}(${3}) {
+	${0:${VISUAL}}
+}
+endsnippet
+snippet fun "function declaration and inmplementation" b
+$1 $2($3)${4: __attribute__ ((noreturn))};
+${1:void} ${2:function_name}(${3}) {
+	${0:${VISUAL}}
+}
+endsnippet
+
+snippet ford "for loop with declaration" b
+int $2 = 0;
+for (${2:i} = 0; $2 < ${1:count}; ${3:$2++}) {
+	${0:${VISUAL}}
+}
+endsnippet
+snippet for "for loop" b
+for (${2:i} = 0; $2 < ${1:count}; ${3:$2++}) {
+	${0:${VISUAL}}
+}
+endsnippet
+snippet forrd "reverse for loop" b
+int $2 = 0;
+for (${2:i} = ${1:count}; $2 > 0; ${3:$2--}) {
+	${0:${VISUAL}}
+}
+endsnippet
+snippet forr "reverse for loop" b
+for (${2:i} = ${1:count}; $2 > 0; ${3:$2--}) {
+	${0:${VISUAL}}
+}
+endsnippet
+
+snippet if "if" b
+if (${1:condition}) {
+	${0:${VISUAL}}
+}
+endsnippet
+snippet ife "if else" b
+if (${1:condition}) {
+	${2:${VISUAL}}
+} else {
+	$0
+}
+endsnippet
+snippet el "else"
+else {
+	${0:${VISUAL}}
+}
+endsnippet
+snippet eli "else if"
+else if (${1:condition}) {
+	${0:${VISUAL}}
+}
+endsnippet
+snippet ifi "short if" b
+if (${1:condition}) ${0:${VISUAL}};
+endsnippet
+
+snippet wh "while" b
+while (${1:condition}) {
+	${0:${VISUAL}}
+}
+endsnippet
+snippet do "if" b
+do {
+	${0:${VISUAL}}
+} while (${1:condition});
+endsnippet
+
+snippet sw "switch" b
+switch (${1:expression}) {
+case ${2:first_case}:
+	${3:${VISUAL}}
+	break;$0
+}
+endsnippet
+snippet swd "switch with default" b
+switch (${1:expression}) {
+case ${2:first_case}:
+	${3:${VISUAL}}
+	break;
+$0
+default:
+	${4:handle_default};
+}
+endsnippet
+snippet ca "case clause" b
+case ${1:specific_case}:
+	${2:${VISUAL}}
+	break;$0
+endsnippet
+
+snippet st "struct" b
+struct ${1:StructName} {
+	${0:${VISUAL}}
+}${5: /* variables */};
+endsnippet
+snippet en "enum" b
+enum ${1:EnumName} {
+	${0:${VISUAL}}
+};
+endsnippet
+
+snippet td "typedef" b
+typedef ${1:int} ${2:name};
+$0
+endsnippet
+snippet tds "typedef struct" b
+typedef struct ${2:_$1} {
+	${0:${VISUAL}}
+} ${1:`!p snip.rv = snip.basename`_t};
+endsnippet
+snippet tde "typedef enum" b
+typedef enum ${2:_$1} {
+	${0:${VISUAL}}
+} ${1:`!p snip.rv = snip.basename`_t};
+endsnippet
+
+snippet unu "unused argc and argv" b
+unused(argc);
+unused(argv);
+
+$0
+endsnippet
+
+snippet pri "printf" b
+printf("${1:%s}${2:\n}"${3});$0
+endsnippet
+
+# vim: ft=snippets foldmethod=marker foldenable
