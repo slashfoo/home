@@ -1,0 +1,130 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Script that, when called via a symlinked name, launches the first executable
+# in the path with that name, and starts it once more if a restart file is
+# found.
+#
+# The re-start happens after it reloads the DISPLAY environment variable
+# optionally from a file located at "${HOME}/.local/last_display". This allows
+# for the operation of the accompanying `.vim/plugin/rebinddisplay.vim` which
+# also allows us to restart vim in the event of a catastrophic event.
+#
+# It exports the variable RESTARTS_DIR and if it finds the file 'restart' in
+# that directory, proceeds to run the executable again with the original
+# parameters passed to the command line, with `-S ${therestartfile}`
+# prepended. For vim (the intended use for this script) this will launch vim
+# and source the session stored in that file.
+#
+# The way it finds the intended executable by name is by looping through the
+# PATH while rejecting any of the same-named candidates that link to this
+# script. This does not protect against circular recursion, so I'll leave two
+# pieces of wisdom here.
+#
+# I.  Caveat emptor, latin for "may the buyer beware"
+#     -> or in other words, I'm not scared of this troubling me, but your
+#        mileage may vary. Do your homework.
+#
+# II. quidquid Latine dictum sit altum videtur
+#     This is either a magical incantation from a fictitional book about
+#     wizards that conjures knowledge from the ether or something.
+#
+#     or
+#
+#     It is latin for "Whatever is uttered in latin seems profound", which
+#     renders this "wisdom" and all it's surrounding lines a joke. I hope you
+#     like it. Also, let me know that you read the whole thing, you're a hero.
+#
+# Inspired by Sam Watkin's tip in the vim_use google group in the message:
+# https://groups.google.com/forum/#!msg/vim_use/F0T4BVtPCtg/G-lee4jJcMsJ
+
+typeset REAL_FULLPATH="${0:A}"
+first-bin () {
+    local target_basename="${1?}"
+    local path_dir
+    for path_dir in "${(@)path}"; do
+        local candidate="${path_dir}/${target_basename}"
+        [[ -x "${candidate}" ]] || continue
+        [[ "${candidate:A}" != "${REAL_FULLPATH}" ]] || continue
+        echo "${candidate}"
+        return
+    done
+}
+
+reload-display-var () {
+    setopt local_options
+    unsetopt err_exit
+    unsetopt err_return
+
+    local last_display=''
+    if [[ -r "${HOME}/.local/last_display" ]]; then
+        read -r last_display <"${HOME}/.local/last_display"
+    fi
+
+    if [[ -z "${last_display:-}${DISPLAY:-}" ]]; then
+        unset DISPLAY
+    else
+        typeset -gx DISPLAY="${last_display:-${DISPLAY}}"
+    fi
+}
+
+setopt err_exit
+setopt err_return
+setopt no_unset
+setopt pipe_fail
+
+typeset CALLED_AS="${0:t}"
+typeset REAL_BASENAME="${REAL_FULLPATH:t}"
+
+if [[ "${CALLED_AS}" == "${REAL_BASENAME}" ]]; then
+    echo -n "you're using this wrong " >&2
+    echo "you should using differently-named links to this script" >&2
+    exit 1
+fi
+
+typeset INTENDED="$(first-bin "${CALLED_AS}")"
+if [[ -z "${INTENDED:-}" ]]; then
+    echo "could not find executable for ${CALLED_AS}" >&2
+    exit 1
+fi
+
+typeset -gx RESTARTS_DIR="$(mktemp --tmpdir -d tmp.restartfiles.$$.XXXXXXXXXX)"
+typeset RESTARTFILE="${RESTARTS_DIR}/restart"
+
+clean-up () {
+    rm -rf "${RESTARTS_DIR}"
+}
+trap clean-up ERR EXIT QUIT
+
+
+typeset -i EXIT_CODE
+
+reload-display-var
+"${INTENDED}" "${@}"
+EXIT_CODE="${?}"
+
+while [[ -e "${RESTARTFILE}" ]]; do
+    echo -n "$(date +"%Y-%m-%dT%H:%M:%S%:z") " >&2
+    echo "Found restart session... restarting ${CALLED_AS}" >&2
+    mv -f "${RESTARTFILE}" "${RESTARTFILE}.attempted"
+
+    reload-display-var
+    "${INTENDED}" -S "${RESTARTFILE}.attempted" "${@}"
+    EXIT_CODE="${?}"
+
+    rm -f "${RESTARTFILE}.attempted"
+done
+
+exit "${EXIT_CODE}"
