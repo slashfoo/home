@@ -1,0 +1,45 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# If we find clipper-in (a script I use with clipper to copy stuff) rebind
+# clipboard bindings from tmux to use clipper-in instead of xclip
+
+setopt err_exit
+setopt no_unset
+setopt pipe_fail
+
+[[ -n "${TMUX:-}" ]] || exit 1
+command -v clipper-in >/dev/null 2>&1 || exit 0
+if xdpyinfo -display "${DISPLAY:-}" >/dev/null 2>&1; then
+    exit 0
+fi
+test -S "${HOME}/.ssh/sock/clipper.sock" || exit 0
+nc -z -d -U "${HOME}/.ssh/sock/clipper.sock" >/dev/null 2>/dev/null || exit 0
+
+tmux unbind-key -T copy-mode-vi C-j
+tmux unbind-key -T copy-mode-vi Enter
+tmux unbind-key -T copy-mode-vi y
+tmux unbind-key -T copy-mode MouseDragEnd1Pane
+tmux unbind-key -T copy-mode-vi MouseDragEnd1Pane
+tmux unbind-key C-c
+
+tmux bind-key -T copy-mode-vi C-j send -X copy-pipe-and-cancel "clipper-in"
+tmux bind-key -T copy-mode-vi Enter send -X copy-pipe-and-cancel "clipper-in"
+tmux bind-key -T copy-mode-vi y send -X copy-pipe-and-cancel "clipper-in"
+tmux bind-key -T copy-mode MouseDragEnd1Pane send -X copy-pipe-and-cancel \
+    "clipper-in"
+tmux bind-key -T copy-mode-vi MouseDragEnd1Pane send -X copy-pipe-and-cancel \
+    "clipper-in"
+tmux bind-key C-c run-shell "tmux show-buffer | clipper-in"

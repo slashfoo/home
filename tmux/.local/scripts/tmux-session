@@ -1,0 +1,62 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# if not currently inside tmux, record or unset last_display
+#
+# Then attach/switch to the specified session and cause all other clients on
+# that session to detach.
+
+setopt err_exit
+setopt no_unset
+setopt pipe_fail
+
+typeset SESSION_NAME="${1:-default}"
+shift 2>/dev/null || true
+if [[ "${#}" -gt 0 ]]; then
+    echo 'Usage: tmux-session [sessionname]'
+    exit 1
+fi
+
+# make sure the session exists
+tmux has-session -t "=${SESSION_NAME}" >/dev/null 2>&1 || \
+    TMUX= tmux new-session -d -c "${HOME:-/}" -s "${SESSION_NAME}"
+
+if [[ -z "${TMUX:-}" ]]; then
+    mkdir --parents --mode 'u=rwx,go=' "${HOME}/.local"
+    typeset -gx DISPLAY="${DISPLAY:-}"
+    if [[ -n "${DISPLAY}" ]]; then
+        install -m 'u=rw,go=' <(echo "${DISPLAY}") \
+            "${HOME}/.local/last_display"
+    else
+        rm -vf "${HOME}/.local/last_display"
+        unset DISPLAY
+    fi
+    exec tmux attach-session -d -c "${HOME:-/}" -t "=${SESSION_NAME}"
+fi
+
+typeset TMUX_CLIENT
+typeset TMUX_SESSION
+typeset A_CLIENT
+read -r TMUX_CLIENT TMUX_SESSION < <(
+    tmux display-message -p '#{client_name} #S' 2>/dev/null
+)
+while read -r A_CLIENT; do
+    [[ "${A_CLIENT}" != "${TMUX_CLIENT}" ]] || continue
+    tmux detach-client -t "${A_CLIENT}" >/dev/null 2>/dev/null & disown
+done < <(tmux list-client -F '#{client_name}' -t "=${SESSION_NAME}")
+
+if [[ "${TMUX_SESSION}" != "${SESSION_NAME}" ]]; then
+    exec tmux switch-client -c "${TMUX_CLIENT}" -t "=${SESSION_NAME}"
+fi

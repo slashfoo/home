@@ -1,0 +1,124 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Apply a colored and optionally fancy theme to the current tmux session
+
+setopt err_exit
+setopt no_unset
+setopt pipe_fail
+
+[[ -n "${TMUX:-}" ]] || exit 1
+
+typeset THEME_COLOR_NUMBER="${1:-${TMUX_COLOR:-${THEME_COLOR:-007}}}"
+typeset FANCY_THEME="${2:-${FANCY_TERM-yes}}"
+typeset THEME_COLOR_NAME="colour${THEME_COLOR_NUMBER}"
+typeset THEME_GLOBAL="${3:-${THEME_GLOBAL:-}}"
+
+case "${FANCY_THEME}" in
+    y|yes|1)
+        FANCY_THEME=yes
+        ;;
+    *)
+        FANCY_THEME=
+        ;;
+esac
+
+# THEMING {{{
+
+## COMMON FANCY/NOT-FANCY {{{
+
+tmux set-option ${THEME_GLOBAL:+-g} status on
+tmux set-option ${THEME_GLOBAL:+-g} status-position "top"
+tmux set-option ${THEME_GLOBAL:+-g} status-justify "left"
+tmux set-option ${THEME_GLOBAL:+-g} status-left-length 100
+tmux set-option ${THEME_GLOBAL:+-g} status-right-length 100
+tmux set-window-option ${THEME_GLOBAL:+-g} window-status-separator ""
+tmux set-option ${THEME_GLOBAL:+-g} status-interval 5
+
+## COLORING {{{
+
+tmux set-window-option ${THEME_GLOBAL:+-g} mode-style "bold,fg=${THEME_COLOR_NAME},bg=default"
+
+### NORMAL/ACTIVE
+tmux set-window-option ${THEME_GLOBAL:+-g} window-style "fg=colour244,bg=default"
+tmux set-window-option ${THEME_GLOBAL:+-g} window-active-style "fg=colour007,bg=default"
+
+### CLOCK STUFF
+tmux set-window-option ${THEME_GLOBAL:+-g} clock-mode-colour "${THEME_COLOR_NAME}"
+tmux set-window-option ${THEME_GLOBAL:+-g} clock-mode-style 24
+
+### PANE DISPLAY
+tmux set-option ${THEME_GLOBAL:+-g} display-panes-colour "colour244"
+tmux set-option ${THEME_GLOBAL:+-g} display-panes-active-colour "${THEME_COLOR_NAME}"
+
+### MAIN BAR
+tmux set-option ${THEME_GLOBAL:+-g} status-left-style "fg=colour233,bg=${THEME_COLOR_NAME}"
+tmux set-option ${THEME_GLOBAL:+-g} status-style "fg=${THEME_COLOR_NAME},bg=colour237"
+
+### MESSAGE TOASTS/VISUAL-BELLS
+tmux set-option ${THEME_GLOBAL:+-g} message-style "fg=colour007,bg=colour237"
+
+### COMMAND ENTRY (:-mode)
+### Note: this doesn't seem to have any effect in tmux 2.5 and message-style is
+###       the same as the command style
+tmux set-option ${THEME_GLOBAL:+-g} message-command-style "fg=colour007,bg=colour237"
+
+### PANE BORDERS
+tmux set-window-option ${THEME_GLOBAL:+-g} pane-active-border-style "fg=${THEME_COLOR_NAME},bg=default"
+tmux set-window-option ${THEME_GLOBAL:+-g} pane-border-style "fg=colour244,bg=default"
+
+### CURRENT WINDOW
+tmux set-window-option ${THEME_GLOBAL:+-g} window-status-current-style "fg=colour233,bg=${THEME_COLOR_NAME}"
+
+### WINDOWS WITH A BELL ALERT
+tmux set-window-option ${THEME_GLOBAL:+-g} window-status-bell-style "fg=${THEME_COLOR_NAME},underscore,bg=colour242"
+
+### WINDOWS WITH RECENT ACTIVITY
+tmux set-window-option ${THEME_GLOBAL:+-g} window-status-activity-style "fg=${THEME_COLOR_NAME},underscore,bg=colour237"
+
+### ALL OTHER WINDOWS
+tmux set-window-option ${THEME_GLOBAL:+-g} window-status-style "fg=colour007,bg=colour237"
+
+## }}}
+
+## }}}
+
+if [[ -z "${FANCY_THEME:-}" ]]; then
+    ## NOT-FANCY ONLY {{{
+
+    ### LEFT/RIGHT OF MAIN BAR
+    tmux set-option ${THEME_GLOBAL:+-g} status-left "#[fg=colour233,bold] #h #[fg=colour007,nobold,bg=colour240] #S #[fg=default,bg=colour237] "
+    tmux set-option ${THEME_GLOBAL:+-g} status-right "#[fg=colour007,bg=colour237] #I:#P #[fg=colour007,bg=colour240] %A #[fg=colour253,bg=colour242] %Y-%m-%d %H:%M #(tmux-widget-internet --nofancy)"
+
+    ### WINDOW/TAB NAMES
+    tmux set-window-option ${THEME_GLOBAL:+-g} window-status-format " #I:#W "
+    tmux set-window-option ${THEME_GLOBAL:+-g} window-status-current-format " #I:#W "
+
+    ## }}}
+else
+    ## FANCY ONLY {{{
+
+    ### LEFT/RIGHT OF MAIN BAR
+    tmux set-option ${THEME_GLOBAL:+-g} status-left "#[fg=colour233,bold,bg=${THEME_COLOR_NAME}] #h #[fg=${THEME_COLOR_NAME},bg=colour240,nobold,nounderscore,noitalics]#[fg=colour007,bg=colour240] #S #[fg=colour240,bg=colour237,nobold,nounderscore,noitalics]"
+    tmux set-option ${THEME_GLOBAL:+-g} status-right "#[fg=colour237,bg=colour237,nobold,nounderscore,noitalics]#[fg=colour007,bg=colour237] #I:#P #[fg=colour240,bg=colour237,nobold,nounderscore,noitalics]#[fg=colour007,bg=colour240] %A #[fg=colour242,bg=colour240,nobold,nounderscore,noitalics]#[fg=colour253,bg=colour242] %Y-%m-%d %H:%M #(tmux-widget-internet)"
+
+    ### WINDOW/TAB NAMES
+    tmux set-window-option ${THEME_GLOBAL:+-g} window-status-format "#[fg=colour237,bg=colour237,nobold,nounderscore,noitalics]#[default] #I:#W #[fg=colour237,bg=colour237,nobold,nounderscore,noitalics]"
+    tmux set-window-option ${THEME_GLOBAL:+-g} window-status-current-format "#[fg=colour237,bg=${THEME_COLOR_NAME},nobold,nounderscore,noitalics]#[fg=colour237,bg=${THEME_COLOR_NAME}] #I:#W #[fg=${THEME_COLOR_NAME},bg=colour237,nobold,nounderscore,noitalics]"
+
+    ## }}}
+fi
+
+# }}}
