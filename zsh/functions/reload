@@ -12,18 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-alias gr='\grep -i --color=auto'
-alias grep='\grep --color=auto'
-
-alias rh='\builtin rehash'
-
-alias cpr='\rsync -havz --partial --info=progress2'
-alias mvr='\rsync -havz --partial --info=progress2 --remove-source-files'
-
-alias abspath='\realpath -s'
-
-alias nl='\nl -ba'
-
-alias ffprobe='\ffprobe -hide_banner'
-alias ffmpeg='\ffmpeg -hide_banner'
-alias http='\http --verbose --style=native'
+if command -v env >/dev/null 2>&1 && command -v reset >/dev/null 2>&1; then
+    env reset
+fi
+builtin hash -r
+if [[ -n "${TMUX:-}" ]]; then
+    eval "$(tmux show-environment -s 2>/dev/null)"
+fi
