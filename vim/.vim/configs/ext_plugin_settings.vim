@@ -30,8 +30,12 @@ Plug 'epeli/slimux'
 Plug 'google/vim-codefmt'
 Plug 'itchyny/lightline.vim'
 Plug 'jiangmiao/auto-pairs'
-Plug 'junegunn/fzf'
-Plug 'junegunn/fzf.vim'
+
+if executable('fzf')
+    " Only load fzf plugins if we have the executable installed
+    Plug 'junegunn/fzf'
+    Plug 'junegunn/fzf.vim'
+endif
 Plug 'majutsushi/tagbar', { 'on': 'TagbarToggle' }
 Plug 'mbbill/undotree', { 'on': ['UndotreeToggle'] }
 Plug 'rking/ag.vim'
