@@ -18,6 +18,5 @@
 # Documentated on `man 1 zshoptions`
 
 setopt auto_continue
-setopt extended_glob
 setopt numeric_glob_sort
 setopt pipe_fail

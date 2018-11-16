@@ -27,8 +27,8 @@ fi
 #   - "${ZDOTDIR}/profile.d"
 #   - "${HOME}/.local/zsh/profile.d"
 typeset -a ZSHRC_PLUGINS=(
-    "${ZDOTDIR}"/profile.d/*.zsh(N.)
-    "${HOME}"/.local/zsh/profile.d/*.zsh(N.)
+    "${ZDOTDIR}"/profile.d/*.zsh(#q-N.)
+    "${HOME}"/.local/zsh/profile.d/*.zsh(#q-N.)
 )
 typeset PLUGIN
 for PLUGIN in "${(@)ZSHRC_PLUGINS}"; do

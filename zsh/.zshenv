@@ -81,6 +81,9 @@ fi
 # /etc/zsh/zshenv is still loaded
 unsetopt global_rcs
 
+# allow for fancy globs
+setopt extended_glob
+
 # ZDOTDIR is modified so that subsequent zsh rc-files are the ones adjacent to
 # this .zshenv file.
 #
@@ -107,8 +110,8 @@ typeset -gx ZDOTDIR="${${(%):-%x}:A:h}"
 #   - "${ZDOTDIR}/profile.d"
 #   - "${HOME}/.local/zsh/profile.d"
 typeset -a ZSHENV_PLUGINS=(
-    "${ZDOTDIR}"/profile.d/*.zshenv(N.)
-    "${HOME}"/.local/zsh/profile.d/*.zshenv(N.)
+    "${ZDOTDIR}"/profile.d/*.zshenv(#q-N.)
+    "${HOME}"/.local/zsh/profile.d/*.zshenv(#q-N.)
 )
 typeset PLUGIN
 for PLUGIN in "${(@)ZSHENV_PLUGINS}"; do
