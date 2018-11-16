@@ -202,3 +202,6 @@ bindkey '[50~' insert-tab
 
 # Bind C-p to previous history entry, can still use Up for "up-line-or-history"
 bindkey '^p' up-history
+
+# remove the annoying ^T mapping that's default on zsh
+bindkey -r '^T'
