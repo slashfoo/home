@@ -290,6 +290,11 @@ function! ext_plugin_settings#set_variables()
     let g:tagbar_compact = 1
     let g:tagbar_map_showproto = ''
     " }}}
+    " scriptease {{{
+
+    let g:scriptease_iskeyword = 0
+
+    " }}}
     " thesaurus_query {{{
     let g:tq_mthesaur_file = $MYVIMDIR . '/spell/mthesaur.txt'
     let g:tq_enabled_backends = ['thesaurus_com', 'mthesaur_txt']
