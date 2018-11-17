@@ -261,6 +261,11 @@ endfunction " }}}
 function! VimRC_RepeatMaybe(what_to_repeat) " {{{
     silent! call repeat#set(a:what_to_repeat)
 endfunction " }}}
+function! VimRC_CallIfExists(filename) " {{{
+    if filereadable(expand(a:filename))
+        source a:filename
+    endif
+endfunction " }}}
 function! VimRC_ToggleCrosshair() " {{{
     if &cursorline
         setlocal nocursorline
@@ -314,6 +319,11 @@ endfunction " }}}
 
 " HELPERS: Functions VimRC_* }}}
 
+" RUNTIME: vimrc.local {{{
+
+call VimRC_CallIfExists($MYVIMDIR . '/vimrc.before.local')
+
+" RUNTIME: vimrc.local }}}
 " RUNTIME: Path modification / Dir creation {{{
 
 if $MYVIMRC == ''
@@ -550,7 +560,7 @@ set sidescroll=1
 " menu, tab line, status, gutter, num columns, and invisible characters
 
 " I have already seen the splash way too many times
-set shortmess=aoOTIc
+set shortmess=aoOtTIc
 
 set laststatus=2
 
@@ -692,6 +702,7 @@ nnoremap cd :cd <C-r>=fnameescape(expand('%:p:h'))<CR>/
 
 nnoremap <silent> <Leader>$ x$p
 nnoremap <silent> <Leader><Space> :nohls<CR>
+nnoremap <silent> <Leader>/ :nohls<CR>
 nnoremap <Leader>d <NOP>
 nnoremap <Leader>x <NOP>
 
@@ -1269,6 +1280,12 @@ augroup vimrc_load_mappings
 augroup end
 
 " EXTRA: Local and Ext Plugin Config loading }}}
+
+" RUNTIME: vimrc.after.local {{{
+
+call VimRC_CallIfExists($MYVIMDIR . '/vimrc.after.local')
+
+" RUNTIME: vimrc.local }}}
 
 let g:already_ran_vimrc = 'yup'
 " vim: foldmethod=marker foldenable

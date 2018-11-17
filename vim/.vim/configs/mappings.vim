@@ -64,8 +64,4 @@ if mapcheck('<plug>(interestingwords#resetwords)') != ''
     nnoremap coy :call interestingwords#toggle_syntax()<CR>
 endif
 
-if executable('tmux') && ($TMUX != "")
-    nnoremap <silent> <Leader>v :call VimRC_PasteFromTmux()<CR>
-endif
-
 " vim: foldmethod=marker foldenable
