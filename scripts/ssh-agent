@@ -1,0 +1,60 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# A wrapper around ssh-agent that populates defaults for -a and -t parameters
+
+setopt err_exit
+setopt err_return
+setopt no_unset
+setopt pipe_fail
+
+typeset TIMESTAMP_FMT='%D{%s%6.}'
+typeset SOCK_FILE="${HOME}/.ssh/sock/agent.${(%):-${TIMESTAMP_FMT}}"
+typeset TIME_TO_LIVE='1d'
+typeset SSH_AGENT_EXEC=''
+
+for path_dir in "${(@)path}"; do
+    local candidate="${path_dir}/ssh-agent"
+    [[ -x "${candidate}" ]] || continue
+    [[ "${candidate:A}" != "${${(%):-%x}:A}" ]] || continue
+    typeset -g SSH_AGENT_EXEC="${candidate}"
+    break
+done
+[[ -n "${SSH_AGENT_EXEC:-}" ]] || {
+    echo "Could not find ssh-agent in path" >&2
+    exit 1
+}
+
+while getopts ":at" opt; do
+    case "${opt}" in
+        a)
+            SOCK_FILE="${OPTARG}"
+            ;;
+        t)
+            TIME_TO_LIVE="${OPTARG}"
+            ;;
+    esac
+done
+shift $(( OPTIND - 1 ))
+unset opt
+unset OPTIND
+unset OPTERR
+unset OPTARG
+
+mkdir --verbose --parents --mode='u=rwx,go=' "${SOCK_FILE:h}"
+chmod -c -R 'u=rwX,go=' "${SOCK_FILE:h}"
+
+set -- -a "${SOCK_FILE}" -t "${TIME_TO_LIVE}" "${@}"
+exec "${SSH_AGENT_EXEC}" "${@}"
