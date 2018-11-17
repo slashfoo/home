@@ -1135,6 +1135,104 @@ augroup end
 
 " AUTOCOMMANDS: Autobots, roll out! }}}
 
+" CLIPBOARD (COPYING/PASTING) {{{
+
+if executable('clip.exe')
+    if has('nvim')
+        let g:clipboard = {
+            \   'name': 'WindowsClipboard',
+            \   'copy': {
+            \      '+': 'clip.exe',
+            \      '*': 'clip.exe',
+            \    },
+            \   'paste': {
+            \      '+': 'false',
+            \      '*': 'false',
+            \   },
+            \   'cache_enabled': 1,
+            \ }
+    else
+        augroup vimrc_clipboard
+            autocmd!
+            autocmd TextYankPost *
+                    \ silent! call system('clip.exe', v:event["regcontents"])
+        augroup end
+    endif
+elseif $DISPLAY != '' && executable('xclip')
+    if has('nvim')
+        let g:clipboard = {
+            \   'name': 'X11-clipboard',
+            \   'copy': {
+            \      '+': 'xclip -in -selection clipboard',
+            \      '*': 'xclip -in -selection clipboard',
+            \    },
+            \   'paste': {
+            \      '+': 'xclip -out -selection clipboard',
+            \      '*': 'xclip -out -selection clipboard',
+            \   },
+            \   'cache_enabled': 1,
+            \ }
+    else
+        augroup vimrc_clipboard
+            autocmd!
+            autocmd TextYankPost *
+                    \ silent! call system(
+                    \   'xclip -in -selection clipboard',
+                    \   v:event["regcontents"])
+        augroup end
+    endif
+elseif $DISPLAY == '' && executable('clipper') && executable('clipper-in')
+    if has('nvim')
+        let g:clipboard = {
+            \   'name': 'X11-clipboard',
+            \   'copy': {
+            \      '+': 'clipper-in',
+            \      '*': 'clipper-in',
+            \    },
+            \   'paste': {
+            \      '+': 'false',
+            \      '*': 'false',
+            \   },
+            \   'cache_enabled': 1,
+            \ }
+    else
+        augroup vimrc_clipboard
+            autocmd!
+            autocmd TextYankPost *
+                    \ silent! call system('clipper-in', v:event["regcontents"])
+        augroup end
+    endif
+elseif $TMUX != ''
+    if has('nvim')
+        let g:clipboard = {
+            \   'name': 'TMUX-clipboard',
+            \   'copy': {
+            \      '+': 'tmux load-buffer -',
+            \      '*': 'tmux load-buffer -',
+            \    },
+            \   'paste': {
+            \      '+': 'tmux save-buffer -',
+            \      '*': 'tmux save-buffer -',
+            \   },
+            \   'cache_enabled': 1,
+            \ }
+    else
+        augroup vimrc_clipboard
+            autocmd!
+            autocmd TextYankPost *
+                    \ silent! call system(
+                    \   'tmux load-buffer -', v:event['regcontents'])
+        augroup end
+    endif
+else
+    let g:clipboard = {}
+    augroup vimrc_clipboard
+        autocmd!
+    augroup end
+endif
+
+" }}}
+
 " EXTRA: Local and Ext Plugin Config loading {{{
 
 " Set here and not on autoload/ or after/ for when re-sourcing
