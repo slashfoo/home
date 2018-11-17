@@ -22,6 +22,7 @@ setopt auto_pushd
 setopt cdable_vars
 setopt complete_in_word
 setopt interactive_comments
+setopt glob_dots
 setopt no_flow_control
 setopt no_pushd_to_home
 setopt path_dirs
