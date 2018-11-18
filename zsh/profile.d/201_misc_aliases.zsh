@@ -27,3 +27,6 @@ alias nl='\nl -ba'
 alias ffprobe='\ffprobe -hide_banner'
 alias ffmpeg='\ffmpeg -hide_banner'
 alias http='\http --verbose --style=native'
+
+alias dat='\date +"Q%q.%W %10A, %b %_d    %Y-%m-%dT%H:%M:%S%:z (%Z)"'
+alias help='\run-help'
