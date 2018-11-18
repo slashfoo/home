@@ -12,14 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if [[ ! -r "${HOME}/.wgetrc" ]]; then
-
-    typeset THIS_DIR="${${(%):-%x}:A:h}"
-    ln -svT "${THIS_DIR:h:h}/one-offs/.wgetrc" "${HOME}/.wgetrc"
-    unset THIS_DIR
-
-fi
-
 mkdir --parents --verbose --mode='u=rwx,go=' "${HOME}/.cache/wget"
 chmod -R -c 'u=rwX,go=' "${HOME}/.cache/wget"
 
