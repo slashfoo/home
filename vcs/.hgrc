@@ -1,0 +1,39 @@
+[extensions]
+color =
+
+[ui]
+username = Jamiel Almeida <jamielalmeida@gmail.com>
+ignore.global = ~/.hgignore_global
+
+[color]
+# valid modes are win32, ansi, auto, off
+mode = auto
+status.added = green
+status.modified = blue
+status.deleted = red
+status.ignored = white
+status.removed = red
+status.unknown = magenta
+qseries.applied = green
+qseries.unapplied = yellow
+qseries.missing = red
+
+[alias]
+a = add
+b = branch
+ci = commit
+co = checkout
+f = fetch
+h = log --template "{rev}\t{node|short} {date|shortdate} ({pad(date|age,14,' ',True)}) | [[38;5;002m{author|person}[00m] {desc|strip|firstline} :: [38;5;003m{tags}[00m\n" -r "limit(sort(min(ancestors(.))::.,-rev),10)"
+hl = log --template "{rev}\t{node|short} {date|shortdate} ({pad(date|age,14,' ',True)}) | [[38;5;002m{author|person}[00m] {desc|strip|firstline} :: [38;5;003m{tags}[00m\n" -r "sort(min(ancestors(.))::.,-rev)"
+i = incoming --stat
+l = pull
+m = merge
+o = outgoing --stat
+p = push -r .
+r = revert -r tip
+s = status
+u = update
+show = log -pr
+
+# vim: ft=cfg:commentstring=#\ %s

@@ -1,0 +1,112 @@
+[user]
+    name = Jamiel Almeida
+    signingkey = DEADBEEF
+    useConfigOnly = true
+[url "git@code.sips.coffee:slashfoo/"]
+    insteadof = my:
+[url "git@github.com:"]
+     pushInsteadOf = "https://github.com/"
+[core]
+    autocrlf = input
+    safecrlf = true
+    excludesfile = ~/.gitignore_global
+    quotepath = false
+[commit]
+    template = ~/.git_commit_template.txt
+    # gpgsign = true
+[color]
+    ui = auto
+[color "diff"]
+    plain = normal
+    meta = yellow bold
+    frag = magenta bold
+    old = red
+    new = green
+    commit = yellow
+[color "branch"]
+    current = green
+    local = yellow
+    remote = red
+    plain = normal
+[color "status"]
+    header = normal
+    added = green
+    updated = blue
+    changed = red
+    untracked = cyan
+    nobranch = cyan
+[color "grep"]
+    match = red
+[color "interactive"]
+    prompt = normal
+    header = normal
+    help = yellow
+    error = red
+[push]
+    default = upstream
+[diff]
+    algorithm = patience
+    tool = vimdiff
+    renames = copies
+    prompt = false
+[format]
+    pretty = fuller
+[alias]
+    personal = config --local --add user.email jamiel.almeida@gmail.com
+    work = config --local --add user.email jamielalmeida@google.com
+
+    a = add
+    alias = !git config --list | grep '^alias\\.' | cut -f2- -d.
+    b = branch
+    ci = commit
+    co = checkout
+    count = shortlog -sne
+    d = diff
+    dc = diff --cached
+    dcs = diff --cached --stat
+    ds = diff --stat
+    f = fetch
+    hl = log --pretty=tformat:\"%<(9)%h %ad (%>(14,trunc)%ar) | [%C(green)%<(10,trunc)%an%Creset] %s %C(yellow)%d%Creset\" --date=short --color=always --graph
+    h = !git --no-pager hl --max-count=15
+    s = status -sb
+    sl = status
+    undo = revert HEAD --no-edit
+    unstage = reset HEAD
+    ro = !git fetch -a && git rebase origin/master
+    root = rev-parse --show-toplevel
+    vd = difftool
+
+    # Sourced from: https://stackoverflow.com/a/11768870
+    # List of variables at:
+    #   https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables
+    #
+    # Example usage:
+    #   git change-commits GIT_AUTHOR_EMAIL \
+    #       "old@email.com" "new@email.com" HEAD~10..HEAD
+    prune-local = !git branch —merged | tr -d ‘*’ | grep -v dev | xargs -n1 git branch -d
+    change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
+
+    # got these from http://blog.apiaxle.com/post/handy-git-tips-to-stop-you-getting-fired/
+    assume   = update-index --assume-unchanged
+    unassume = update-index --no-assume-unchanged
+    assumed  = "!git ls-files -v | grep ^h | cut -c 3-"
+    snapshot = !git stash push --message="snapshot:$(date +'%Y-%m-%dT%H:%M:%S.%3N%:z')" && git stash apply --index --quiet "stash@{0}"
+    snap = !git snapshot
+    exec = "!exec "
+[tag]
+    sort = version:refname
+[versionsort]
+    prereleaseSuffix = -pre
+    prereleaseSuffix = .pre
+    prereleaseSuffix = -alpha
+    prereleaseSuffix = .alpha
+    prereleaseSuffix = -beta
+    prereleaseSuffix = .beta
+    prereleaseSuffix = -rc
+    prereleaseSuffix = .rc
+[difftool]
+    prompt = false
+[merge]
+    tool = vimdiff
+[credential]
+    helper = cache --timeout=86400

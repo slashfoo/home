@@ -1,0 +1,3 @@
+# Maximum recommended title length --------------|
+# Maximum recommended line legth ------------------------------------|
+# vim: ft=gitcommit tw=70 commentstring=#\ %s
