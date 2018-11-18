@@ -1,0 +1,33 @@
+set editing-mode emacs
+set bind-tty-special-chars off
+set completion-ignore-case on
+set show-all-if-unmodified
+set show-all-if-ambiguous on
+set completion-prefix-display-length 2
+set colored-stats on
+set completion-query-items 50
+set enable-keypad on
+set expand-tilde off
+set echo-control-characters off
+
+TAB: complete
+"\C-l": clear-screen
+"\C-a": beginning-of-line
+"\C-e": end-of-line
+"\C-f": forward-char
+"\C-b": backward-char
+"\M-f": forward-word
+"\M-b": backward-word
+
+"\C-p": previous-history
+"\C-n": next-history
+
+"\C-d": delete-char
+"\C-k": kill-line
+"\C-u": unix-line-discard
+"\C-w": unix-filename-rubout
+"\ew": unix-word-rubout
+
+"\M-d": kill-word
+"\C-o": "\ew\C-y\C-y"
+"\C-j": "\C-a\C-k\C-y\C-m\C-y"
