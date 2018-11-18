@@ -31,15 +31,6 @@ if command -v less >/dev/null 2>&1; then
     typeset -gx LESS_TERMCAP_ue=$'\033[0m'      # end underline   -> reset-all
     typeset -gx LESS_TERMCAP_us=$'\033[1;4;35m' # start underline ->
                                                 #       bold underline magenta
-
-    # Documented in `man 1 lesskey`
-    typeset -gx LESSKEY=''
-    if [[ -e "${HOME}/.local" ]]; then
-        LESSKEY="${HOME}/.local/dot_less"
-    else
-        LESSKEY="${HOME}/.less"
-    fi
-
 elif command -v more >/dev/null 2>&1; then
     typeset -gx PAGER="$(command -v more)"
 else
@@ -65,13 +56,3 @@ if [[ -n "${EDITOR:-}" ]]; then
 else
     unset VISUAL
 fi
-
-typeset DOT_LESSKEY="${HOME}/.local/dot_lesskey"
-if command -v lesskey >/dev/null 2>&1 && \
-   [[ -e "${DOT_LESSKEY}" ]]; then
-    if [[ ! -e "${LESSKEY:-}" ]] || \
-       [[ "${LESSKEY:-}" -ot "${DOT_LESSKEY}" ]]; then
-        command lesskey "${DOT_LESSKEY}"
-    fi
-fi
-unset DOT_LESSKEY
