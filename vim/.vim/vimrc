@@ -173,7 +173,11 @@ function! VimRC_Bwipeout() " {{{
     try
         buffer #
     catch /E86:/
-        bprevious
+        try
+            bprevious
+        catch /E85:/
+            bwipeout!
+        endtry
     endtry
     try
         bwipeout #
