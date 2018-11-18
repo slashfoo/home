@@ -122,6 +122,9 @@ function! <SID>ListcharsToggleTrail(set_to) " {{{
         execute 'set listchars-=' . g:prev_trail_listchar
     endif
 endfunction " }}}
+function! <SID>OpenInBackground(filename) " {{{
+    silent! execute 'badd ' . fnameescape(expand(a:filename))
+endfunction " }}}
 function! <SID>Preserve(command) " {{{
     " Based on: http://vimcasts.org/episodes/tidying-whitespace/
     " Preparation: save last search, clipboard, and cursor position.
@@ -236,14 +239,20 @@ function! VimRC_FormatBuffer() " {{{
     call <SID>Preserve('normal! ggVG=')
 endfunction " }}}
 function! VimRC_OpenOldFilesBuffer() " {{{
-    new +setlocal\ buftype=nofile
-    0put =v:oldfiles
-    normal! gg
+    silent! edit +setlocal\ buftype=nofile\ bufhidden=wipe\ nobuflisted
+                \ __Old__
+    let l:yeolde = filter(copy(v:oldfiles), 'filereadable(expand(v:val))')
+    0put =l:yeolde
+    normal! Gddgg
+    nnoremap <silent> <buffer> <Esc> :bwipeout!<CR>
+    nnoremap <silent> <buffer> o
+                    \ :badd <C-r>=fnameescape(expand(getline('.')))<CR><CR>
+                    \:<C-r>=line('.')<CR>delete _<CR>
+    xnoremap <silent> <buffer> o
+        \ :call map(getline("'<", "'>"), '<SID>OpenInBackground(v:val)')<CR>
+        \:execute "'<,'>delete _"<CR>
     nnoremap <silent> <buffer> <CR>
-                             \ :let g:oldfiles_buffer = bufnr('%')<CR>
-                             \:edit <C-r>=fnameescape(getline('.'))<CR><CR>
-                             \:bwipeout <C-r>=g:oldfiles_buffer<CR><CR>
-                             \:unlet! g:oldfiles_buffer<CR>
+                    \ :edit <C-r>=fnameescape(expand(getline('.')))<CR><CR>
 endfunction " }}}
 function! VimRC_PasteEnter() " {{{
     setlocal paste
