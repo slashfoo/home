@@ -1,0 +1,10 @@
+.git/*
+.hg/*
+bazel-*/*
+_swaps/*
+_undos/*
+_views/*
+__pycache__/*
+*.py[co]
+*.so
+*.zwc
