@@ -1,0 +1,195 @@
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+shell:
+ program: /usr/bin/zsh
+ args:
+   - -l
+
+env:
+  TERM: rxvt-unicode-256color
+  COLORTERM: truecolor
+
+window:
+  decorations: false
+  dimensions:
+    columns: 91
+    lines: 30
+
+  padding:
+    x: 2
+    y: 2
+
+dpi:
+  x: 96.0
+  y: 96.0
+
+tabspaces: 4
+
+draw_bold_text_with_bright_colors: true
+
+# Mouse bindings
+mouse_bindings:
+  - { mouse: Middle, action: PasteSelection }
+
+mouse:
+  double_click: { threshold: 200 }
+  triple_click: { threshold: 200 }
+
+selection:
+  semantic_escape_chars: ",│`|:\"' ()[]{}<>"
+
+hide_cursor_when_typing: false
+live_config_reload: true
+unfocused_hollow_cursor: true
+
+font:
+  normal:
+    family: Fira Code
+    style: Regular
+
+  bold:
+    family: Fira Code
+    style: Bold
+
+  italic:
+    family: Fira Code
+    style: Italic
+
+  size: 8
+
+  offset:
+    x: 0
+    y: 2
+
+  glyph_offset:
+    x: 0
+    y: 0
+
+  use_thin_strokes: true
+
+render_timer: false
+
+custom_cursor_colors: true
+
+# Colors
+colors:
+  primary:
+    background: '0x3A3A3A'
+    foreground: '0xAAAAAA'
+
+  # Colors the cursor will use if custom_cursor_colors is true
+  cursor:
+    text: '0x000000'
+    cursor: '0x7CAFC2'
+
+  normal:
+    black:   '0x484848'
+    red:     '0xBF5D5A'
+    green:   '0xA1B56C'
+    yellow:  '0xDBA656'
+    blue:    '0x7CAFC2'
+    magenta: '0xBA8BAF'
+    cyan:    '0x55B4A8'
+    white:   '0xCCCCCC'
+
+  bright:
+    black:   '0x828282'
+    red:     '0xFFACAB'
+    green:   '0xC5DA8B'
+    yellow:  '0xF7CB88'
+    blue:    '0x85DDFA'
+    magenta: '0xF1C6E6'
+    cyan:    '0x7CDFD2'
+    white:   '0xEEEEEE'
+
+  # Dim colors (Optional)
+  # dim:
+  #   black:   '0x333333'
+  #   red:     '0xf2777a'
+  #   green:   '0x99cc99'
+  #   yellow:  '0xffcc66'
+  #   blue:    '0x6699cc'
+  #   magenta: '0xcc99cc'
+  #   cyan:    '0x66cccc'
+  #   white:   '0xdddddd'
+
+# Visual Bell
+visual_bell:
+  animation: EaseOutExpo
+  duration: 0
+
+# background_opacity: 1.00
+background_opacity: 0.85
+
+# Key bindings
+key_bindings:
+  - { key: Equals,   mods: Control,          action: ResetFontSize       }
+  - { key: Add,      mods: Control,          action: IncreaseFontSize    }
+  - { key: Subtract, mods: Control,          action: DecreaseFontSize    }
+  - { key: V,        mods: Command|Shift,    action: Paste               }
+  - { key: Insert,   mods: Shift,            action: PasteSelection      }
+  - { key: Home,                    chars: "\x1bOH",   mode: AppCursor   }
+  - { key: Home,                    chars: "\x1b[H",   mode: ~AppCursor  }
+  - { key: End,                     chars: "\x1bOF",   mode: AppCursor   }
+  - { key: End,                     chars: "\x1b[F",   mode: ~AppCursor  }
+  - { key: PageUp,   mods: Shift,   chars: "\x1b[5;2~"                   }
+  - { key: PageUp,   mods: Control, chars: "\x1b[5;5~"                   }
+  - { key: PageUp,                  chars: "\x1b[5~"                     }
+  - { key: PageDown, mods: Shift,   chars: "\x1b[6;2~"                   }
+  - { key: PageDown, mods: Control, chars: "\x1b[6;5~"                   }
+  - { key: PageDown,                chars: "\x1b[6~"                     }
+  - { key: Left,     mods: Shift,   chars: "\x1b[1;2D"                   }
+  - { key: Left,     mods: Control, chars: "\x1b[1;5D"                   }
+  - { key: Left,     mods: Alt,     chars: "\x1b[1;3D"                   }
+  - { key: Left,                    chars: "\x1b[D",   mode: ~AppCursor  }
+  - { key: Left,                    chars: "\x1bOD",   mode: AppCursor   }
+  - { key: Right,    mods: Shift,   chars: "\x1b[1;2C"                   }
+  - { key: Right,    mods: Control, chars: "\x1b[1;5C"                   }
+  - { key: Right,    mods: Alt,     chars: "\x1b[1;3C"                   }
+  - { key: Right,                   chars: "\x1b[C",   mode: ~AppCursor  }
+  - { key: Right,                   chars: "\x1bOC",   mode: AppCursor   }
+  - { key: Up,       mods: Shift,   chars: "\x1b[1;2A"                   }
+  - { key: Up,       mods: Control, chars: "\x1b[1;5A"                   }
+  - { key: Up,       mods: Alt,     chars: "\x1b[1;3A"                   }
+  - { key: Up,                      chars: "\x1b[A",   mode: ~AppCursor  }
+  - { key: Up,                      chars: "\x1bOA",   mode: AppCursor   }
+  - { key: Down,     mods: Shift,   chars: "\x1b[1;2B"                   }
+  - { key: Down,     mods: Control, chars: "\x1b[1;5B"                   }
+  - { key: Down,     mods: Alt,     chars: "\x1b[1;3B"                   }
+  - { key: Down,                    chars: "\x1b[B",   mode: ~AppCursor  }
+  - { key: Down,                    chars: "\x1bOB",   mode: AppCursor   }
+  - { key: Tab,      mods: Shift,   chars: "\x1b[Z"                      }
+  - { key: F1,                      chars: "\x1bOP"                      }
+  - { key: F2,                      chars: "\x1bOQ"                      }
+  - { key: F3,                      chars: "\x1bOR"                      }
+  - { key: F4,                      chars: "\x1bOS"                      }
+  - { key: F5,                      chars: "\x1b[15~"                    }
+  - { key: F6,                      chars: "\x1b[17~"                    }
+  - { key: F7,                      chars: "\x1b[18~"                    }
+  - { key: F8,                      chars: "\x1b[19~"                    }
+  - { key: F9,                      chars: "\x1b[20~"                    }
+  - { key: F10,                     chars: "\x1b[21~"                    }
+  - { key: F11,                     chars: "\x1b[23~"                    }
+  - { key: F12,                     chars: "\x1b[24~"                    }
+  - { key: Back,                    chars: "\x7f"                        }
+  - { key: Back,     mods: Alt,     chars: "\x1b\x7f"                    }
+  - { key: Insert,                  chars: "\x1b[2~"                     }
+  - { key: Delete,                  chars: "\x1b[3~"                     }
+  - { key: Space,    mods: Alt,     chars: "\x1b[45~"                    }
+  - { key: Space,    mods: Shift,   chars: "\x1b[46~"                    }
+  - { key: Return,   mods: Control, chars: "\x1b[47~"                    }
+  - { key: Return,   mods: Alt,     chars: "\x1b[48~"                    }
+  - { key: Return,   mods: Shift,   chars: "\x1b[49~"                    }
+  - { key: Tab,      mods: Control, chars: "\x1b[50~"                    }
