@@ -19,7 +19,7 @@ typeset -gx VIRTUAL_ENV_DISABLE_PROMPT=1
 typeset -gx PYTHONSTARTUP="${PYTHONSTARTUP:-}"
 typeset THIS_DIR="${${(%):-%x}:A:h}"
 [[ -n "${PYTHONSTARTUP}" ]] || \
-    PYTHONSTARTUP="${THIS_DIR:h:h}/one-offs/pythonstartup.py"
+    PYTHONSTARTUP="${THIS_DIR:h:h}/one-offs/.pythonstartup.py"
 unset THIS_DIR
 
 
