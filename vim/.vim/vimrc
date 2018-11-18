@@ -724,7 +724,7 @@ nnoremap <Leader>q :qall<CR>
 nnoremap <Leader>Q :cquit!<CR>
 nnoremap <silent> <Leader>c :call VimRC_Bwipeout()<CR>
 
-nnoremap <Leader>C :bwipeout!<CR>
+nnoremap <silent> <Leader>C :bwipeout!<CR>
 
 nnoremap <Leader>ec :make<CR>
 nnoremap <Leader>ef :edit <C-r>=fnameescape(expand('%:h')) == ''
