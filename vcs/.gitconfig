@@ -52,8 +52,8 @@
 [format]
     pretty = fuller
 [alias]
-    personal = config --local --add user.email jamiel.almeida@gmail.com
-    work = config --local --add user.email jamielalmeida@google.com
+    personal = config --local user.email jamiel.almeida@gmail.com
+    work = config --local user.email jamielalmeida@google.com
 
     a = add
     alias = !git config --list | grep '^alias\\.' | cut -f2- -d.
