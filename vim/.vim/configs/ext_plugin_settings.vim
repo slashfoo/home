@@ -72,10 +72,13 @@ Plug 'saihoooooooo/vim-textobj-space'
 Plug 'plasticboy/vim-markdown'
 Plug 'nelstrom/vim-subrip'
 Plug 'rust-lang/rust.vim'
-Plug 'sheerun/vim-polyglot'
 Plug 'mattn/emmet-vim'
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 Plug 'buoto/gotests-vim', {'do': 'go get -v github.com/cweill/gotests/gotests'}
+
+" Putting vim-polyglot at the end to wor around a vim-go bug.
+" Bug URL: https://github.com/fatih/vim-go/issues/2045#issuecomment-437197496
+Plug 'sheerun/vim-polyglot'
 
 " }}}
 " Helper Functions {{{
@@ -273,7 +276,7 @@ function! ext_plugin_settings#set_variables()
     " }}}
     " polyglot {{{
     let g:python_highlight_all = 1
-    let g:polyglot_disabled = ['markdown']
+    let g:polyglot_disabled = ['markdown', 'go']
     " }}}
     " slimux {{{
     if $PREFERRED_TMUX !=# ''
