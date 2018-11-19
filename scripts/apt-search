@@ -1,0 +1,45 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Wrapper around apt search, searches for multiple patterns, and shows a pretty
+# and condensed table of the results with the keywords highlighted
+
+setopt err_exit
+setopt no_unset
+setopt pipe_fail
+
+typeset -gx GREP_COLORS='sl=0;00:cx=0;90:rv:mt=1;32:fn=0;34:ln=0;33:se=1;30'
+
+typeset APT_LIST="$(mktemp --tmpdir apt-search.XXXXXXXXXX)"
+cleanup () {
+    rm -f "${APT_LIST}"
+}
+
+trap cleanup EXIT ERR QUIT
+
+typeset -aU packages=( "${@}" )
+
+typeset pkg
+for pkg in "${(@)packages}"; do
+    apt search "${pkg}" >>"${APT_LIST}" 2>/dev/null &
+done
+wait
+unset pkg
+
+sort -u "${APT_LIST}" \
+    | awk 'NF && !/^( |Sorting|Full Text Search)/' \
+    | sed -e 's#/# #' \
+    | column -t \
+    | grep --color=auto -i -P "(${(j:|:)packages}|$)"

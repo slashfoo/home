@@ -1,0 +1,35 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+setopt local_options
+setopt no_unset err_return
+
+local -F OFFLINE_TIME=0
+local -F ONLINE_TIME=0
+local -F 6 TIME_OFFLINE=0
+while ! 200 -f </dev/null >/dev/null 2>&1; do
+    [[ "${OFFLINE_TIME}" -gt 0 ]] || OFFLINE_TIME="${EPOCHREALTIME}"
+    echo -n .
+    sleep 0.3
+done
+
+if [[ "${OFFLINE_TIME}" -gt 0 ]]; then
+    ONLINE_TIME="${EPOCHREALTIME}"
+    echo
+    TIME_OFFLINE="$(( ONLINE_TIME - OFFLINE_TIME ))"
+    echo -e "Was offline for \033[31m${TIME_OFFLINE}s\033[0m"
+else
+    echo -e "Was \033[32monline\033[0m when first checked."
+fi
