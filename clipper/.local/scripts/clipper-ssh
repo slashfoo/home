@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Creates a dedicated ssh connection to the specified hosts mapping the
+# RemoteForward-ing the clipper socket to the local address.
+
+set -eu -o pipefail
+if [[ "${#}" -eq 0 ]]; then
+    echo "Error: Must specify at least one host" >&2
+    exit 1
+fi
+
+_is_connected () {
+    local target_host="${1?}"
+    ssh \
+        -o ControlPath="${HOME}/.ssh/sock/clipper-%C" \
+        -O check "${target_host}" >/dev/null 2>&1
+    return "${?}"
+}
+
+_ssh_tmp_config () {
+    local target_host="${1?}"
+    ssh \
+        -o ClearAllForwardings=yes \
+        -o ExitOnForwardFailure=yes \
+        -o StreamLocalBindUnlink=yes \
+        -o ControlPath="${HOME}/.ssh/sock/clipper-%C" \
+        -xa -G "${target_host}" \
+        | sed -e 's/^clearallforwardings yes$/clearallforwardings no/i'
+}
+
+declare TMP_HOSTCONF
+declare REMOTE_HOME
+while [[ "${#}" -ge 1 ]]; do
+    CLIPPER_HOST="${1?}"
+    shift
+    echo "running on ${CLIPPER_HOST}..."
+    if _is_connected "${CLIPPER_HOST}"; then
+        echo "already running on ${CLIPPER_HOST}, skipping"
+        continue
+    fi
+    TMP_HOSTCONF="$(
+        mktemp \
+            --suffix=".sshconf" \
+            --tmpdir="${HOME}/.ssh" \
+            "tmp.${CLIPPER_HOST}.XXXXXXXXXX"
+    )"
+    chmod -c 'u=rw,go=' "${TMP_HOSTCONF}"
+    (
+        REMOTE_HOME="$(
+            ssh -xan \
+                -o ClearAllForwardings=yes \
+                -o ControlPersist=yes \
+                -o ControlMaster=auto \
+                -o ControlPath="${HOME}/.ssh/sock/alt-%C" \
+                "${CLIPPER_HOST}" \
+                'echo "${HOME}"; clipper-rm >/dev/null 2>&1'
+        )"
+        _ssh_tmp_config "${CLIPPER_HOST}" >"${TMP_HOSTCONF}"
+        set +e
+        exec ssh -n -N \
+            -F "${TMP_HOSTCONF}" \
+            -o LogLevel=DEBUG3 \
+            -R "${REMOTE_HOME}/.ssh/sock/clipper.sock:${HOME}/.ssh/sock/clipper.sock" \
+            "${CLIPPER_HOST}" \
+            >"${HOME}/.local/log/clipper-ssh-${CLIPPER_HOST}.log" \
+            2>&1 &
+            disown
+        sleep 1
+        rm -f "${TMP_HOSTCONF}"
+    ) &
+done
+wait
