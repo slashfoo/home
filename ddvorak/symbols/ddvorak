@@ -1,0 +1,97 @@
+// Copyright 2018 Jamiel Almeida
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+default  partial alphanumeric_keys modifier_keys
+xkb_symbols "basic" {
+
+        name[Group1]= "English (Drunken Dvorak)";
+
+        // NUMBER ROW
+        //                Unmodified      Shift           AltGr           Shift+AltGr
+        key <TLDE> {    [ asciicircum   , at            , asciicircum   , at            ]       };
+        key <AE01> {    [ bracketleft   , 1             , bracketleft   , 1             ]       };
+        key <AE02> {    [ braceleft     , 2             , braceleft     , 2             ]       };
+        key <AE03> {    [ ampersand     , 3             , ampersand     , 3             ]       };
+        key <AE04> {    [ parenleft     , 4             , leftdoublequotemark, leftsinglequotemark]       };
+        key <AE05> {    [ equal         , 5             , notequal      , notequal      ]       };
+        key <AE06> {    [ plus          , 6             , plusminus     , plusminus     ]       };
+        key <AE07> {    [ parenright    , 7             , rightdoublequotemark, rightsinglequotemark]       };
+        key <AE08> {    [ asterisk      , 8             , multiply      , multiply      ]       };
+        key <AE09> {    [ braceright    , 9             , braceright    , 9             ]       };
+        key <AE10> {    [ bracketright  , 0             , degree        , degree        ]       };
+        key <AE11> {    [ numbersign    , grave         , notsign       , notsign       ]       };
+        key <AE12> {    [ exclam        , percent       , exclamdown    , exclamdown    ]       };
+
+        // UPPER ALPHA ROW
+        //                Unmodified      Shift           AltGr           Shift+AltGr
+        key <AD01> {    [ semicolon     , colon         , enfilledcircbullet, copyright ]       };
+        key <AD02> {    [ comma         , less          , paragraph     , guillemotleft ]       };
+        key <AD03> {    [ period        , greater       , ellipsis      , guillemotright]       };
+        key <AD04> {    [ p             , P             , udiaeresis    , Udiaeresis    ]       };
+        key <AD05> {    [ y             , Y             , y             , Y             ]       };
+        key <AD06> {    [ f             , F             , f             , F             ]       };
+        key <AD07> {    [ g             , G             , g             , G             ]       };
+        key <AD08> {    [ c             , C             , ccedilla      , Ccedilla      ]       };
+        key <AD09> {    [ r             , R             , registered    , trademark     ]       };
+        key <AD10> {    [ l             , L             , l             , L             ]       };
+        key <AD11> {    [ slash         , question      , questiondown  , questiondown  ]       };
+        key <AD12> {    [ backslash     , bar           , division      , brokenbar     ]       };
+        key <BKSL> {    [ dollar        , asciitilde    , currency      , EuroSign      ]       };
+
+        // HOME ROW ROW
+        //                Unmodified      Shift           AltGr           Shift+AltGr
+        key <AC01> {    [ a             , A             , aacute        , Aacute        ]       };
+        key <AC02> {    [ o             , O             , oacute        , Oacute        ]       };
+        key <AC03> {    [ e             , E             , eacute        , Eacute        ]       };
+        key <AC04> {    [ u             , U             , uacute        , Uacute        ]       };
+        key <AC05> {    [ i             , I             , iacute        , Iacute        ]       };
+        key <AC06> {    [ d             , D             , d             , D             ]       };
+        key <AC07> {    [ h             , H             , h             , H             ]       };
+        key <AC08> {    [ t             , T             , t             , T             ]       };
+        key <AC09> {    [ n             , N             , ntilde        , Ntilde        ]       };
+        key <AC10> {    [ s             , S             , ssharp        , section       ]       };
+        key <AC11> {    [ minus         , underscore    , U2013         , U2014         ]       };
+
+        // LOWER ALPHA ROW
+        //                Unmodified      Shift           AltGr           Shift+AltGr
+        key <AB01> {    [ apostrophe    , quotedbl      , apostrophe    , quotedbl      ]       };
+        key <AB02> {    [ q             , Q             , q             , Q             ]       };
+        key <AB03> {    [ j             , J             , j             , J             ]       };
+        key <AB04> {    [ k             , K             , k             , K             ]       };
+        key <AB05> {    [ x             , X             , x             , X             ]       };
+        key <AB06> {    [ b             , B             , b             , B             ]       };
+        key <AB07> {    [ m             , M             , mu            , mu            ]       };
+        key <AB08> {    [ w             , W             , w             , W             ]       };
+        key <AB09> {    [ v             , V             , v             , V             ]       };
+        key <AB10> {    [ z             , Z             , z             , Z             ]       };
+
+        include "level3(ralt_switch)"
+};
+
+// Make the left Ctrl key a Hyper key (Mod4)
+xkb_symbols "lctrl_hyper" {
+    replace key <LCTL>  { [ Hyper_L ] };
+    modifier_map Mod4 { <LCTL> };
+};
+
+// Make the left Ctrl key a Hyper key (Mod4)
+xkb_symbols "rwin_altgr" {
+    replace key <RWIN>  { [ ISO_Level3_Shift ] };
+};
+
+// Swap PageUp and PageDown keys
+xkb_symbols "pgup_pgdn" {
+    key <PGUP> { [ Next ] };
+    key <PGDN> { [ Prior ] };
+};
