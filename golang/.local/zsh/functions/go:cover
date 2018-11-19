@@ -1,0 +1,38 @@
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+setopt local_options
+setopt pipe_fail
+
+[[ "${PWD:a}" == "${GOPATH}/src"/* ]] || \
+    [[ -f ./go.mod ]] || \
+    return
+
+if [[ "${#}" -eq 0 ]]; then
+    set -- ./...
+fi
+
+go test -v -covermode=count -coverprofile=./.cover.out "${@}" | \
+    awk -f "${${(%):-%x}:A:h:h:h:h}/gotest.awk"
+
+local COVER_LINES="$(grep -vc '^mode: count$' ./.cover.out)"
+if [[ "${COVER_LINES}" -eq 0 ]]; then
+    rm -vf ./.cover.out ./.cover.html
+    return 1
+fi
+
+go tool cover -html=./.cover.out -o ./.cover.html
+if command -v clipper-in >/dev/null 2>&1; then
+    echo "file://${${:-./.cover.html}:a}" | clipper-in
+fi

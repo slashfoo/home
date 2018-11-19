@@ -1,0 +1,47 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Try to determine the import path for a given directory or .go file
+
+typeset TARGET_DIR="${${1:-${PWD}}:a}"
+if [[ -f "${TARGET_DIR}" ]] || [[ "${TARGET_DIR}" = *.go ]]; then
+    TARGET_DIR="${TARGET_DIR:h}"
+fi
+typeset PKG_IMPORTSTR=""
+
+if [[ "${TARGET_DIR}" == "${GOPATH}/src"/* ]]; then
+    PKG_IMPORTSTR="${TARGET_DIR/${GOPATH}\/src\//}"
+else
+    cd "${TARGET_DIR}"
+    typeset GOMOD_FILE=( (../)#go.mod(#qN.Y1) )
+    if [[ -n "${GOMOD_FILE:-}" ]]; then
+        typeset PKG_RELPATH="$(realpath --relative-to="${GOMOD_FILE:a:h}" .)"
+        [[ "${PKG_RELPATH}" != '.' ]] || PKG_RELPATH=''
+        typeset ROOT_IMPORTSTR="$(
+            awk '$1 == "module" { print $NF; }' "${GOMOD_FILE}"
+        )"
+    else
+        typeset GIT_ROOT=( (../)#.git(#q-D/:a:h) )
+        typeset PKG_RELPATH="$(realpath --relative-to="${GIT_ROOT}" .)"
+        [[ "${PKG_RELPATH}" != '.' ]] || PKG_RELPATH=''
+        typeset ROOT_IMPORTSTR="${${${${:-$(
+            git remote get-url origin
+        )}#*:\/\/}#*@}//://}"
+    fi
+    PKG_IMPORTSTR="${ROOT_IMPORTSTR}${PKG_RELPATH:+/${PKG_RELPATH}}"
+fi
+
+[[ -n "${PKG_IMPORTSTR:-}" ]] || exit 1
+echo "${PKG_IMPORTSTR}"
