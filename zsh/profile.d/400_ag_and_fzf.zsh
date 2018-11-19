@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-typeset AG_IGNORE="${HOME}/.agignore"
+typeset -gx AG_IGNORE="${HOME}/.agignore"
 if [[ ! -r "${AG_IGNORE}" ]]; then
 
     typeset THIS_DIR="${${(%):-%x}:A:h}"
@@ -24,14 +24,12 @@ fi
 typeset -a ag_alias=(
     'ag'
     '--depth=20'
-    "--path-to-ignore='${AG_IGNORE}'"
+    "--path-to-ignore=${AG_IGNORE}"
     '--follow'
     '--hidden'
     '--skip-vcs-ignores'
 )
 alias ag="\\${(j: :)ag_alias}"
-
-unset AG_IGNORE
 
 typeset -gx FZF_TMUX=0
 typeset -gx FZF_COMPLETION_TRIGGER='~~'
@@ -43,7 +41,7 @@ typeset -a fzf_default_opts=(
     '--no-mouse'
     '--inline-info'
     '--prompt=">>> "'
-    "--history='${HOME}/.local/history/fzf_history'"
+    "--history=${HOME}/.local/history/fzf_history"
     '--history-size=9999999'
     '--bind="f3:toggle-all"'
 )
