@@ -22,17 +22,22 @@ setopt extended_glob
 setopt pipe_fail
 
 command -v git >/dev/null 2>&1 || return 1
-typeset COMMAND="${${:-git}:c}"
-typeset GIT_DOTDIR=( (../)#.git(#qN/:a) )
+local COMMAND="${${:-git}:c}"
+local DOTGIT_DIR=( (../)#.git(#qN/:a) )
 
 if [[ "${#}" -eq 0 ]]; then
     set -- status -sb
-elif [[ -n "${GIT_DOTDIR:-}" ]]; then
-    typeset CANDIDATE="${GIT_DOTDIR}/${1}"
+elif [[ -n "${DOTGIT_DIR:-}" ]]; then
+    local CANDIDATE="${DOTGIT_DIR}/${1}"
     if [[ -x "${CANDIDATE}" ]]; then
         COMMAND="${CANDIDATE}"
         shift
     fi
 fi
 
-${COMMAND} "${@}"
+if [[ "${1:-}" == 'clone' ]]; then
+    shift
+    my-git-clone "${@}"
+else
+    ${COMMAND} "${@}"
+fi
