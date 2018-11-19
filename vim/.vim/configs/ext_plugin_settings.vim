@@ -99,7 +99,9 @@ endfunction
 
 function! ext_plugin_settings#set_variables()
     " ag {{{
-    let g:ag_prg='ag --depth=20 --path-to-ignore "' . $HOME . '/.local/ag_ignore" --follow --hidden --skip-vcs-ignores --vimgrep --smart-case'
+    if $AG_IGNORE != ''
+        let g:ag_prg='ag --depth=20 --path-to-ignore ' . $AG_IGNORE . ' --follow --hidden --skip-vcs-ignores --vimgrep --smart-case'
+    endif
     let g:ag_highlight=0
     let g:ag_apply_lmappings=0
     let g:ag_apply_qmappings=0

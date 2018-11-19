@@ -1,9 +1,12 @@
 .git/*
 .hg/*
 bazel-*/*
+_ext_plugin/*
+_nviminfo
 _swaps/*
 _undos/*
 _views/*
+_viminfo
 __pycache__/*
 *.py[co]
 *.so
