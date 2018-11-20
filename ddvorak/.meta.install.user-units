@@ -1,0 +1,52 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Install systemd units for user services, et al.
+
+setopt err_exit
+setopt no_unset
+setopt pipe_fail
+
+typeset -A user_units=()
+
+user_units[${HOME}/.config/systemd/user/keyboard-layout.service]="$(
+command -v ddvorak >/dev/null 2>&1 && \
+cat <<-EOUNITFILE || true
+[Unit]
+Description=Set my keyboard layout for this x11 session
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=${${:-ddvorak}:c:A}
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=xsession.target
+EOUNITFILE
+)"
+
+typeset did_something=
+for target_file in "${(k)user_units[@]}"; do
+    [[ -n "${user_units[${target_file}]:-}" ]] || continue
+    [[ ! -r "${target_file}" ]] || continue
+    install --verbose --mode='u=rw,go=' /dev/null "${target_file}"
+    tee "${target_file}" <<<"${user_units[${target_file}]:-}"
+    did_something='yes'
+done
+
+if [[ "${did_something}" == 'yes' ]]; then
+    systemctl --user daemon-reload
+fi

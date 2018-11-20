@@ -1,0 +1,51 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Set keyboard mapping default for X and grub to be dvorak
+
+setopt err_exit
+setopt no_unset
+setopt pipe_fail
+
+if ! grep --quiet '^XKBVARIANT="dvorak"$' /etc/default/keyboard; then
+
+sudo install --verbose --mode='u=rw,go=r' --owner='root' --group='root' \
+    /dev/null /etc/default/keyboard
+
+sudo tee /etc/default/keyboard <<-EOKEYBOARDCONF
+	# KEYBOARD CONFIGURATION FILE
+
+	# Consult the keyboard(5) manual page.
+
+	XKBMODEL="pc105"
+	XKBLAYOUT="us"
+	XKBVARIANT="dvorak"
+	XKBOPTIONS="lv3:ralt_switch,compose:lwin,terminate:ctrl_alt_bksp,caps:ctrl_modifier,ctrl:lctrl_meta"
+
+	BACKSPACE="guess"
+EOKEYBOARDCONF
+
+sudo dpkg-reconfigure -f noninteractive keyboard-configuration
+
+fi
+
+if ! grep --silent \
+    'GRUB_CMDLINE_LINUX=".*setkmap=dvorak.*"' /etc/default/grub; then
+
+    sudo sed -i.bk \
+        -e '/^GRUB_CMDLINE_LINUX\=/s#$# setkmap=dvorak#' /etc/default/grub
+    sudo update-grub
+
+fi
