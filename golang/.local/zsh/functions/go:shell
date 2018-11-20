@@ -22,7 +22,7 @@ if [[ -z "${OH_GOSH:-}" ]]; then
         typeset -gx OH_GOSH="${EPOCHREALTIME}"
         typeset -gx GOPATH=~gp
         typeset -gx GOROOT=~gr
-        typeset -gx THEME_COLOR=225
+        typeset -gx THEME_COLOR="${GOLANG_THEME_COLOR:-13}"
         cdpath=( ~g ~gp/src/*/*(#qND/:a) )
         path=( ~gr/bin ~gp/bin "${path[@]}" )
         [[ "${PWD:a}" == ~g/* ]] || cd ~g
