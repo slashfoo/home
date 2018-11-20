@@ -1,0 +1,156 @@
+! Copyright 2018 Jamiel Almeida
+!
+! Licensed under the Apache License, Version 2.0 (the "License");
+! you may not use this file except in compliance with the License.
+! You may obtain a copy of the License at
+!
+!     http://www.apache.org/licenses/LICENSE-2.0
+!
+! Unless required by applicable law or agreed to in writing, software
+! distributed under the License is distributed on an "AS IS" BASIS,
+! WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+! See the License for the specific language governing permissions and
+! limitations under the License.
+
+
+! XFT font stuff
+Xft.lcdfilter:                  lcddefault
+Xft.dpi:                        96
+Xft.antialias:                  true
+Xft.rgba:                       rgb
+Xft.hinting:                    true
+Xft.hintstyle:                  hintslight
+
+! Default color depth and default geometry
+URxvt.depth:                    32
+URxvt.geometry:                 91x30
+
+! Set very minimal lightening of the terminal on lost focus
+URxvt.fading:                   5
+URxvt.fadeColor:                #FFFFFF
+
+URxvt.urgentOnBell:             true
+URxvt.visualBell:               true
+URxvt.loginShell:               true
+URxvt.saveLines:                65535
+URxvt.internalBorder:           0
+URxvt.termName:                 rxvt-unicode-256color
+
+! Disable Urxvt Ctrl+Shift functionalities
+URxvt.iso14755:                 false
+URxvt.iso14755_52:              false
+
+! Fonts
+URxvt.allow_bold:               true
+URxvt.font:                     xft:Fira Code:pixelsize=19:autohint=true
+URxvt.boldFont:                 xft:Fira Code:Bold:pixelsize=19:autohint=true
+URxvt.italicFont:               xft:Fira Code:Italic:pixelsize=19:autohint=true
+URxvt.boldItalicFont:           xft:Fira Code:Bold:Italic:pixelsize=19:autohint=true
+
+! Fix font space, set to negative to compress letter spacing horizontally
+URxvt.letterSpace:              -1
+
+! Scrollbar
+URxvt.scrollStyle:              rxvt
+URxvt.scrollBar:                false
+
+! Cursor
+URxvt.cursorBlink:              true
+
+! Pointer
+URxvt.pointerBlank:             true
+
+! General resources (works for other terminals (?))
+! black
+*.color0:                       #484848
+*.color8:                       #828282
+
+! red
+*.color1:                       #BF5D5A
+*.color9:                       #FFACAB
+
+! green
+*.color2:                       #A1B56C
+*.color10:                      #C5DA8B
+
+! yellow
+*.color3:                       #DBA656
+*.color11:                      #F7CB88
+
+! blue
+*.color4:                       #7CAFC2
+*.color12:                      #85DDFA
+
+! magenta
+*.color5:                       #BA8BAF
+*.color13:                      #F1C6E6
+
+! cyan
+*.color6:                       #55B4A8
+*.color14:                      #7CDFD2
+
+! white
+*.color7:                       #CCCCCC
+*.color15:                      #EEEEEE
+
+*.foreground:                   #AAAAAA
+*.background:                   #3A3A3A
+*.cursorColor:                  #CCCCCC
+
+URxvt.background:           [85]#3A3A3A
+URxvt.cursorColor:              #CCCCCC
+
+! I dont want to print, ever, just send to /dev/null when I press Print keys
+URxvt.print-pipe:               cat > /dev/null
+
+! Because reasons
+URxvt.insecure:                 false
+
+! Disable Scrolling on secondary window (i.e. less without -X)
+URxvt.secondaryScreen:          true
+URxvt.secondaryScroll:          false
+
+! Enabled urxvt extensions
+URxvt.perl-ext-common:          default,-selection-popup,-option-popup,-searchable-scrollback,keyboard-select,url-select,clipboard,resize-font
+
+! Select smaller chunks first
+URxvt.selection.pattern-0:      ([[:word:]]+)
+
+URxvt.url-select.launcher:      browse
+URxvt.url-select.underline:     true
+URxvt.url-select.button:        1
+
+URxvt.clipboard.autocopy:       false
+URxvt.clipboard.copycmd:        xclip -in -selection clipboard
+URxvt.clipboard.pastecmd:       xclip -out -selection clipboard
+
+URxvt.keysym.C-M-Escape:        perl:keyboard-select:activate
+URxvt.keysym.C-M-u:             perl:url-select:select_next
+URxvt.keysym.C-M-c:             perl:clipboard:copy
+URxvt.keysym.C-M-v:             perl:clipboard:paste
+URxvt.keysym.C-M-w:             perl:clipboard:paste_escaped
+URxvt.keysym.C-M-plus:          perl:resize-font:bigger
+URxvt.keysym.C-M-minus:         perl:resize-font:smaller
+URxvt.keysym.C-M-equal:         perl:resize-font:reset
+URxvt.keysym.C-M-slash:         perl:resize-font:show
+
+! Create bindings for...
+! Ctrl+Space = already sends NUL ascii, so not remapping that
+! Alt+Space
+URxvt.keysym.M-space:           \033[45~
+! Shift+Space
+URxvt.keysym.Shift-space:       \033[46~
+! Ctrl+Enter
+URxvt.keysym.Control-Return:    \033[47~
+! Alt+Enter
+URxvt.keysym.M-Return:          \033[48~
+! Shift+Enter
+URxvt.keysym.Shift-Return:      \033[49~
+! Ctrl+Tab
+URxvt.keysym.Control-Tab:       \033[50~
+
+! Cursor settings:
+Xcursor.theme:                  DMZ-Black
+Xcursor.size:                   32
+
+! vim: ft=xdefaults:commentstring=!\ %s:cc+=33

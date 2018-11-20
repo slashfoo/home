@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+synclient TouchpadOff=0
+synclient TapButton1=1
+synclient TapButton2=3
+synclient TapButton3=2
+synclient ClickFinger1=1
+synclient ClickFinger2=3
+synclient ClickFinger3=2
+synclient RTCornerButton=0
+synclient RBCornerButton=0
+synclient LTCornerButton=0
+synclient LBCornerButton=0
+synclient VertEdgeScroll=0
+synclient HorizEdgeScroll=0
+synclient VertTwoFingerScroll=1
+synclient HorizTwoFingerScroll=1
+synclient VertScrollDelta=-150
+synclient HorizScrollDelta=-150
+synclient RightButtonAreaLeft=0
+synclient RightButtonAreaRight=0
+synclient RightButtonAreaTop=0
+synclient RightButtonAreaBottom=0
+synclient MiddleButtonAreaLeft=0
+synclient MiddleButtonAreaRight=0
+synclient MiddleButtonAreaTop=0
+synclient MiddleButtonAreaBottom=0
+
+synclient PressureMotionMinZ=15
+synclient PressureMotionMaxZ=160
+
+synclient FingerLow=2
+synclient FingerHigh=10
+
+synclient ClickPad=1
+synclient ClickFinger1=1
+synclient ClickFinger2=3
+synclient ClickFinger3=2

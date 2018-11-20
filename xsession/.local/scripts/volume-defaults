@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eu -o pipefail
+
+typeset SHORT_HOST="$(hostname -s)"
+typeset SINK="$(
+    pacmd list-sinks | \
+        grep 'alsa_output\.pci-.*\.analog-stereo' | \
+        sed -e 's/^.*<\(.*\)\>.*$/\1/'
+)"
+typeset SOURCE="${SINX}"
+
+[[ -n "${SINK:-}" ]] || SINK='@DEFAULT_SINK@'
+[[ -n "${SOURCE:-}" ]] || SINK='@DEFAULT_SOURCE@'
+
+pactl set-sink-port "${SINK}" analog-output-speaker
+pactl set-sink-volume "${SINK}" '50%'
+pactl set-sink-mute "${SINK}" 1
+
+pactl set-sink-port "${SINK}" analog-output-headphones
+pactl set-sink-volume "${SINK}" '45%' '50%'
+pactl set-sink-mute "${SINK}" 0
+
+pactl set-source-port "${SOURCE}" analog-input-internal-mic
+pactl set-source-volume "${SOURCE}" '50%'
+pactl set-source-mute "${SOURCE}" 1
+
+pactl set-source-port "${SOURCE}" analog-input-mic
+pactl set-source-volume "${SOURCE}" '50%'
+pactl set-source-mute "${SOURCE}" 1
+
+pacmd list-sinks "${SINK}" | \
+    grep -q 'analog-output-headphones: .*available: yes' || \
+    pactl set-sink-port "${SINK}" analog-output-speaker
+
+pacmd list-sources "${SOURCE}" | \
+    grep -q 'analog-input-mic: .*available: yes' || \
+    pactl set-source-port "${SOURCE}" analog-input-internal-mic
+
+pacmd list-sink-inputs | \
+    awk '$1 == "index:" {print $2}' | \
+    xargs -I% -r pacmd move-sink-input % "${SINK}"

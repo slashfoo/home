@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eu -o pipefail
+
+declare ADAPTER_NUM=0
+declare BATTERY_NUM=0
+declare THRESHOLD_WARN=30
+declare THRESHOLD_CRIT=10
+declare THRESHOLD_BYE=5
+declare IDLE_TO_SLEEP=1800
+
+declare SCRIPT_NAME="$(basename "${0}")"
+
+set +e
+read -r -d '' USAGE <<-EOUSAGE
+	Usage:	${SCRIPT_NAME} [-w WARN_PCT] [-c CRIT_PCT] [-b BYE_PCT] [-n SECONDS]
+	      	${SCRIPT_NAME} [-h]
+
+	Options:
+	      	-w WARN_PCT  	Battery percent at/below which to warn.
+	      	             	(Defaults to ${THRESHOLD_WARN}).
+	      	-w CRIT_PCT  	Battery percent at/below which to critically warn.
+	      	             	(Defaults to ${THRESHOLD_CRIT}).
+	      	-w BYE_PCT   	Battery percent at/below which to hybrid-sleep.
+	      	             	(Defaults to ${THRESHOLD_BYE}).
+	      	-n SECONDS   	Number of seconds to allow the computer to idle
+	      	             	while unplugged from AC (Defaults to ${IDLE_TO_SLEEP}).
+EOUSAGE
+set -e
+
+print_usage () {
+    echo "${USAGE}" >&2
+}
+
+
+while getopts ":hw:c:b:n:" opt; do
+    case "${opt}" in
+        w)
+            THRESHOLD_WARN="${OPTARG}"
+            ;;
+        c)
+            THRESHOLD_CRIT="${OPTARG}"
+            ;;
+        b)
+            THRESHOLD_BYE="${OPTARG}"
+            ;;
+        n)
+            IDLE_TO_SLEEP="${OPTARG}"
+            ;;
+        h)
+            PRINT_USAGE=y
+            ;;
+        :)
+            echo "-${OPTARG} requires a parameter" >&2
+            PRINT_USAGE=y
+            ERRORED=y
+            ;;
+        \?)
+            echo "-${OPTARG} is not a recognized option/parameter" >&2
+            PRINT_USAGE=y
+            ERRORED=y
+            ;;
+    esac
+done
+shift $(( OPTIND - 1 ))
+unset opt
+unset OPTIND
+unset OPTERR
+unset OPTARG
+
+if [[ -n "${PRINT_USAGE:-}" ]]; then
+    print_usage
+fi
+if [[ -n "${ERRORED:-}" ]]; then
+    exit 1
+elif [[ -n "${PRINT_USAGE:-}" ]]; then
+    exit 0
+fi
+
+is_plugged_in () {
+    if acpi -a | grep -qE "Adapter ${ADAPTER_NUM}: on-line"; then
+        echo "Currently plugged in"
+    else
+        echo "Currently unplugged"
+        return 1
+    fi
+}
+
+battery_remaining () {
+    acpi -bi | awk -F'[%, ]+' '
+        /^Battery '"${BATTERY_NUM}"':/ && !/capacity/ {
+            status=$3;
+            percent=$4;
+            remaining=$5;
+        }
+        END {
+            print percent;
+        }
+    '
+}
+
+declare remaining=0
+declare idle_time=0
+declare idle_seconds=0
+while :; do
+    idle_time="$(xprintidle)"
+    idle_seconds="$(( idle_time / 1000 ))"
+    remaining="$(battery_remaining)"
+    if ! is_plugged_in >/dev/null; then
+        if [[ "${idle_seconds}" -gt "${IDLE_TO_SLEEP}" ]]; then
+            echo "idle for too long, sleeping!"
+            systemctl suspend
+            sleep 10
+            continue
+        fi
+        if [[ "${remaining}" -le "${THRESHOLD_BYE}" ]]; then
+            echo "battery too low, hibernating!"
+            systemctl hybrid-sleep
+            sleep 10
+            continue
+        elif [[ "${remaining}" -le "${THRESHOLD_CRIT}" ]]; then
+            if [[ -z "${ALREADY_WARNED:-}" ]]; then
+                i3-nagbar -m 'battery extremely low!' \
+                    -t error \
+                    -f 'pango:Fira Code, FontAwesome Bold 32px' \
+                    </dev/null >/dev/null 2>&1 &
+                disown
+                ALREADY_WARNED=y
+            fi
+        elif [[ "${remaining}" -le "${THRESHOLD_WARN}" ]]; then
+            if [[ -z "${ALREADY_CRITTED:-}" ]]; then
+                i3-nagbar -m 'battery running low!' \
+                    -t warning \
+                    -f 'pango:Fira Code, FontAwesome Bold 18px' \
+                    </dev/null >/dev/null 2>&1 &
+                disown
+                ALREADY_CRITTED=y
+            fi
+        else
+            unset ALREADY_WARNED ALREADY_CRITTED
+        fi
+    else
+        unset ALREADY_WARNED ALREADY_CRITTED
+    fi
+    echo -n "$(is_plugged_in || true), "
+    echo "${remaining}% battery remaining, been idle for ${idle_seconds}s"
+    sleep 5
+done
+unset remaining idle_time idle_seconds

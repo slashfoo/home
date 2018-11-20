@@ -1,0 +1,97 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Create the udev rules to set the preferences on my hardware devices
+
+setopt err_exit
+setopt no_unset
+setopt pipe_fail
+
+typeset -A udev_rules=()
+
+udev_rules[/etc/udev/rules.d/59-cst-trackball.rules]="$(
+command -v x11-set-mouse-prefs >/dev/null 2>&1 && \
+cat <<-EORULESFILE || true
+	ACTION=="add", \
+	SUBSYSTEM=="hidraw", \
+	ATTRS{idVendor}=="5332", \
+	ATTRS{idProduct}=="1400", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-x11-set-mouse-prefs}:c:A} -x'"
+EORULESFILE
+)"
+
+udev_rules[/etc/udev/rules.d/59-logitech-mx-anywhere-2.rules]="$(
+command -v x11-set-mouse-prefs >/dev/null 2>&1 && \
+cat <<-EORULESFILE || true
+	ACTION=="add", \
+	SUBSYSTEM=="hidraw", \
+	ATTRS{idVendor}=="046d", \
+	ATTRS{idProduct}=="c52b", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-x11-set-mouse-prefs}:c:A} -x'"
+EORULESFILE
+)"
+
+udev_rules[/etc/udev/rules.d/59-kinesis-advantage2.rules]="$(
+command -v ddvorak >/dev/null 2>&1 && \
+cat <<-EORULESFILE || true
+	ACTION=="add", \
+	SUBSYSTEM=="hidraw", \
+	ATTRS{idVendor}=="29ea", \
+	ATTRS{idProduct}=="0102", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-ddvorak}:c:A} -x'"
+EORULESFILE
+)"
+
+udev_rules[/etc/udev/rules.d/59-thinkpad-onelink-plus.rules]="$(
+command -v thinkpad-dock >/dev/null 2>&1 && \
+command -v thinkpad-undock >/dev/null 2>&1 && \
+cat <<-EORULESFILE || true
+	ACTION=="add", \
+	SUBSYSTEM=="usb", \
+	ATTRS{idVendor}=="17ef", \
+	ATTRS{idProduct}=="3055", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-thinkpad-dock}:c:A}'"
+
+	ACTION=="remove", \
+	SUBSYSTEM=="usb", \
+	ATTRS{idVendor}=="17ef", \
+	ATTRS{idProduct}=="3055", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-thinkpad-undock}:c:A}'"
+EORULESFILE
+)"
+
+typeset did_something=
+for target_file in "${(k)udev_rules[@]}"; do
+    [[ -n "${udev_rules[${target_file}]:-}" ]] || continue
+    [[ ! -r "${target_file}" ]] || continue
+    sudo install --verbose --mode='u=rw,go=r' --owner='root' --group='root' \
+        /dev/null "${target_file}"
+    sudo tee "${target_file}" <<<"${udev_rules[${target_file}]:-}"
+    did_something='yes'
+done
+
+if [[ "${did_something}" == 'yes' ]]; then
+    sudo udevadm control --reload
+fi

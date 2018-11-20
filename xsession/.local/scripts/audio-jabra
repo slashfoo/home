@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eu -o pipefail
+
+typeset SINX=
+if pacmd list-sinks | \
+    grep -q alsa_output.usb-GN_Netcom_A_S_Jabra_EVOLVE_LINK; then
+    SINK="$(
+        pacmd list-sinks | \
+            grep 'alsa_output.usb-GN_Netcom_A_S_Jabra_EVOLVE_LINK' | \
+            sed -e 's/^.*<\(.*\)\>.*$/\1/'
+    )"
+fi
+if [[ -z "${SINK}" ]] || [[ "${1:-}" == "-x" ]]; then
+    SINK="$(
+        pacmd list-sinks | \
+            grep 'alsa_output.pci-' | \
+            sed -e 's/^.*<\(.*\)\>.*$/\1/'
+    )"
+fi
+
+pacmd set-default-sink "${SINK}"
+pactl set-sink-volume "${SINK}" '50%'
+pacmd list-sink-inputs | \
+    awk '$1 == "index:" {print $2}' | \
+    xargs -I% -r pacmd move-sink-input % "${SINK}"
