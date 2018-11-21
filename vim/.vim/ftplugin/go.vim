@@ -12,6 +12,13 @@
 " See the License for the specific language governing permissions and
 " limitations under the License.
 
+" Only do this when not done yet for this buffer
+if exists("b:did_ftplugin")
+  finish
+endif
+
+let b:did_ftplugin = 1
+
 setlocal nolist
 setlocal autowrite
 setlocal noexpandtab
