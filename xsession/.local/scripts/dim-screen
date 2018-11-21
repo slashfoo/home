@@ -1,0 +1,218 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+# Copyright 2014 Ian Campbell
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# .
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# .
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# Based on the script provided with xss-lock 0.3.0-4.
+#
+# After installing a different version, you may be able to find an updated
+# version of this script in the path:
+#   /usr/share/doc/xss-lock/dim-screen.sh
+
+setopt no_unset
+setopt pipe_fail
+
+typeset -i MIN_BRIGHTNESS=10
+typeset -i FADE_TIME=200
+typeset -i FADE_STEPS=20
+typeset -F 2 FADE_STEP_TIME=0.05
+typeset SYSFS_PATH=''
+
+unsetopt err_exit err_return
+typeset SCRIPT_NAME="${0:t}"
+read -r -d '' USAGE <<-EOUSAGE
+	Usage:	${SCRIPT_NAME} [OPTIONS]
+	      	${SCRIPT_NAME} -x
+	      	${SCRIPT_NAME} -h
+
+	Lowers screen brightness, then waits to be killed and restores previous
+	brightness on exit. Useful when used as a notification script for
+	screen-savers or lock screens.
+
+	Examples:
+	    # to use defaults
+	    ${SCRIPT_NAME} -x
+
+	    # Set custom times for xbacklight
+	    ${SCRIPT_NAME} -b 0 -t 500 -s 50
+
+	    # Use sysfs and custom interval between steps
+	    ${SCRIPT_NAME} -i 0.1 -f /sys/class/backlight/acpi_video0/brightness
+
+	Options:
+	      	-b LEVEL     	Brightness level will be lowered to this value.
+	      	             	This value is a percentage of total maximum
+	      	             	brightness, the default is ${MIN_BRIGHTNESS}.
+	      	-f FILEPATH  	Path to the interface inside sysfs. If specified,
+	      	             	'sysfs' method will be used, and '-t' and '-s'
+	      	             	options will be disregarded. When left blank, '-i'
+	      	             	option is disregarded and backlight command is
+	      	             	used.
+	      	             	Defaults to '' (blank).
+	      	-h           	Show this help message.
+	      	-x           	Assume defaults and execute.
+
+	      	             	This flag is provided to allow safe execution
+	      	             	(without side-effects) in when running without
+	      	             	arguments.
+
+	Options specific to using xbacklight:
+	      	-t TIME      	Amount of time the desired fade should take.
+	      	             	This value is a number of milliseconds, defaults
+	      	             	to ${FADE_TIME}.
+	      	-s STEPS     	Number of steps to use when fading. Setting to 1
+	      	             	disables fading. Defaults to ${FADE_STEPS}.
+
+	Options specific to using sysfs:
+	      	-i INTERVAL  	Amount of time to sleep between fade steps when
+	      	             	using sysfs. This is a number of seconds, and
+	      	             	defaults to ${FADE_STEP_TIME}.
+EOUSAGE
+setopt err_exit err_return
+
+print_usage () {
+    echo "${USAGE}" >&2
+}
+
+typeset -i RETCODE=0
+typeset DO_RUN=no
+while getopts ":hxb:f:t:s:i:" opt; do
+    case "${opt}" in
+        h)
+            print_usage
+            exit 0
+            ;;
+        x)
+            DO_RUN=yes
+            ;;
+        b)
+            MIN_BRIGHTNESS="${OPTARG}"
+            DO_RUN=yes
+            ;;
+        f)
+            SYSFS_PATH="${OPTARG}"
+            DO_RUN=yes
+            ;;
+        t)
+            FADE_TIME="${OPTARG}"
+            DO_RUN=yes
+            ;;
+        s)
+            FADE_STEPS="${OPTARG}"
+            DO_RUN=yes
+            ;;
+        i)
+            FADE_STEP_TIME="${OPTARG}"
+            DO_RUN=yes
+            ;;
+        :)
+            echo "Error: ‘-${OPTARG}’ requires a parameter" >&2
+            echo "" >&2
+            print_usage
+            exit 1
+            ;;
+        \?)
+            echo "Error: ‘-${OPTARG}’ is not a valid option/argument." >&2
+            echo "" >&2
+            print_usage
+            exit 1
+            ;;
+    esac
+done
+shift $(( OPTIND - 1 ))
+unset opt
+unset OPTIND
+unset OPTERR
+unset OPTARG
+
+if [[ "${#}" -eq 0 ]] && [[ "${DO_RUN}" != 'yes' ]]; then
+    print_usage
+    exit 0
+fi
+
+if [[ -z "${SYSFS_PATH}" ]] && ! command -v xbacklight >/dev/null 2>&1; then
+    echo -n "Error: " >&2
+    echo "xbacklight command not found in \$PATH." >&2
+    exit 1
+fi
+
+get-brightness () {
+    if [[ "${#}" -ne 0 ]]; then
+        echo -n "Error: " >&2
+        echo "Incorrect usage of get-brightness. Must not use arguments." >&2
+        return 1
+    fi
+    local old_brightness=''
+    if [[ -z "${SYSFS_PATH}" ]]; then
+        old_brightness="$(xbacklight -get)"
+    else
+        read -r old_brightness <"${SYSFS_PATH}"
+    fi
+    echo "${old_brightness:-100}"
+}
+
+set-brightness () {
+    local -i target_brightness="${1:?Target brightness not specified}"
+    if [[ "${#}" -gt 1 ]]; then
+        echo -n "Error: " >&2
+        echo -n "Incorrect usage of set-brightness. " >&2
+        echo "Must provide exactly 1 argument." >&2
+        return 1
+    fi
+    if [[ -z "${SYSFS_PATH}" ]]; then
+        xbacklight -steps 1 -set "${target_brightness}"
+    else
+        echo "${target_brightness}" > "${SYSFS_PATH}"
+    fi
+}
+
+fade-brightness () {
+    local -i min_brightness="${1:?Minimum brightness not specified}"
+    if [[ "${#}" -gt 1 ]]; then
+        echo -n "Error: " >&2
+        echo -n "Incorrect usage of fade-brightness. " >&2
+        echo "Must provide exactly 1 argument." >&2
+        return 1
+    fi
+    if [[ -z "${SYSFS_PATH}" ]]; then
+        xbacklight \
+            -time "${FADE_TIME}" \
+            -steps ${FADE_STEPS} \
+            -set "${min_brightness}"
+    elif [[ -z $fade_step_time ]]; then
+        set-brightness "${1}"
+    else
+        local level
+        for level in $(seq "$(get-brightness)" "${1}"); do
+            set-brightness "${level}"
+            sleep "${fade_step_time}"
+        done
+    fi
+}
+
+trap 'exit 0' TERM INT
+trap "set-brightness $(get-brightness); echo; kill %%" EXIT
+
+# sleep until the heat-death of the universe. Or in our case, the maximum value
+# assumed to be safe of an unsigned integer. See `man 3 sleep`
+sleep 2147483647 &
+
+fade-brightness "${MIN_BRIGHTNESS}"
+wait
