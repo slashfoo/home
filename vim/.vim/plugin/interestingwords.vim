@@ -180,7 +180,7 @@ endfunction
 
 function! interestingwords#toggle_syntax()
     call VimRC_ToggleSyntax()
-    if exists('g:syntax_on')
+    if &syntax != ''
         call <SID>ensure_highlights()
     endif
 endfunction
