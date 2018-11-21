@@ -32,7 +32,7 @@ setopt pipe_fail
 typeset -i MIN_BRIGHTNESS=10
 typeset -i FADE_TIME=200
 typeset -i FADE_STEPS=20
-typeset -F 2 FADE_STEP_TIME=0.05
+typeset -F 3 FADE_STEP_TIME=0.005
 typeset SYSFS_PATH=''
 
 unsetopt err_exit err_return
@@ -60,12 +60,15 @@ read -r -d '' USAGE <<-EOUSAGE
 	      	-b LEVEL     	Brightness level will be lowered to this value.
 	      	             	This value is a percentage of total maximum
 	      	             	brightness, the default is ${MIN_BRIGHTNESS}.
-	      	-f FILEPATH  	Path to the interface inside sysfs. If specified,
-	      	             	'sysfs' method will be used, and '-t' and '-s'
-	      	             	options will be disregarded. When left blank, '-i'
-	      	             	option is disregarded and backlight command is
-	      	             	used.
+	      	-f FILEPATH  	Path to the interface inside sysfs.
 	      	             	Defaults to '' (blank).
+
+	      	             	If specified, the option '-t' will be disregarded.
+	      	             	When left blank, '-i' option is disregarded and
+	      	             	xbacklight command is used.
+
+	      	-s STEPS     	Number of steps to use when fading. Setting to 1
+	      	             	disables fading. Defaults to ${FADE_STEPS}.
 	      	-h           	Show this help message.
 	      	-x           	Assume defaults and execute.
 
@@ -77,13 +80,11 @@ read -r -d '' USAGE <<-EOUSAGE
 	      	-t TIME      	Amount of time the desired fade should take.
 	      	             	This value is a number of milliseconds, defaults
 	      	             	to ${FADE_TIME}.
-	      	-s STEPS     	Number of steps to use when fading. Setting to 1
-	      	             	disables fading. Defaults to ${FADE_STEPS}.
 
 	Options specific to using sysfs:
 	      	-i INTERVAL  	Amount of time to sleep between fade steps when
-	      	             	using sysfs. This is a number of seconds, and
-	      	             	defaults to ${FADE_STEP_TIME}.
+	      	             	using sysfs. This is a floating-point number of
+	      	             	seconds, and defaults to ${FADE_STEP_TIME}.
 EOUSAGE
 setopt err_exit err_return
 
@@ -153,6 +154,12 @@ if [[ -z "${SYSFS_PATH}" ]] && ! command -v xbacklight >/dev/null 2>&1; then
     exit 1
 fi
 
+if [[ "${FADE_STEPS}" -le 0 ]]; then
+    echo -n "Error: " >&2
+    echo "Number of steps is expected to be an integer greater than 1." >&2
+    exit 1
+fi
+
 get-brightness () {
     if [[ "${#}" -ne 0 ]]; then
         echo -n "Error: " >&2
@@ -196,13 +203,17 @@ fade-brightness () {
             -time "${FADE_TIME}" \
             -steps ${FADE_STEPS} \
             -set "${min_brightness}"
-    elif [[ -z $fade_step_time ]]; then
-        set-brightness "${1}"
+    elif [[ -z "${FADE_STEP_TIME}" ]] || \
+         [[ "${FADE_STEPS}" -eq 1 ]] || \
+         [[ "${FADE_STEP_TIME}" -eq 0 ]]; then
+        set-brightness "${min_brightness}"
     else
         local level
-        for level in $(seq "$(get-brightness)" "${1}"); do
+        local -i prev_level="$(get-brightness)"
+        local -i step_width="$(( prev_level / FADE_STEPS ))"
+        for level in {${min_brightness}..${prev_level}..-${step_width}}; do
             set-brightness "${level}"
-            sleep "${fade_step_time}"
+            sleep "${FADE_STEP_TIME}"
         done
     fi
 }
