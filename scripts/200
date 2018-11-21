@@ -29,7 +29,7 @@ last-online-d () {
     echo "${time_since_heartbeat}"
 }
 
-typeset SCRIPT_NAME="$(basename "${0}")"
+typeset SCRIPT_NAME="${0:t}"
 typeset DEFAULT_TARGET_URL='https://google.com/generate_204'
 typeset TARGET_URL="${TWOHUNDRED_URL:-${DEFAULT_TARGET_URL}}"
 
