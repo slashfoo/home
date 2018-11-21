@@ -320,13 +320,38 @@ function! VimRC_ToggleVirtualedit() " {{{
         echomsg 'virtualedit set to all'
     endif
 endfunction " }}}
-function! VimRC_ToggleSyntax() " {{{
-    if exists('g:syntax_on')
+function! VimRC_ToggleSpelling() " {{{
+    if &spell == 0
+        if !exists('b:prev_syntax') || b:prev_syntax == ''
+            let b:prev_syntax = &syntax
+        endif
         silent! execute ':IndentGuidesDisable'
-        syntax off
+        setlocal syntax=
+        setlocal spell
     else
+        if !exists('b:prev_syntax') || b:prev_syntax == ''
+            let b:prev_syntax = 'on'
+        endif
+        setlocal nospell
         silent! execute ':IndentGuidesEnable'
-        syntax on
+        silent! execute 'setlocal syntax=' . b:prev_syntax
+        syntax sync fromstart
+    endif
+endfunction " }}}
+function! VimRC_ToggleSyntax() " {{{
+    if &syntax != ''
+        if !exists('b:prev_syntax') || b:prev_syntax == ''
+            let b:prev_syntax = &syntax
+        endif
+        silent! execute ':IndentGuidesDisable'
+        setlocal syntax=
+    else
+        if !exists('b:prev_syntax') || b:prev_syntax == ''
+            let b:prev_syntax = 'on'
+        endif
+        silent! execute ':IndentGuidesEnable'
+        silent! execute 'setlocal syntax=' . b:prev_syntax
+        syntax sync fromstart
     endif
 endfunction " }}}
 
@@ -1049,7 +1074,7 @@ nmap <silent> com /\v^[<=>]{7}( .*\|$)<CR>
 nnoremap con :call VimRC_ToggleNumAndSign()<CR>
 nnoremap cop :setlocal paste!<CR>
 nnoremap cor :setlocal relativenumber!<CR>
-nnoremap cos :setlocal spell!<CR>
+nnoremap cos :call VimRC_ToggleSpelling()<CR>
 nnoremap cou :setlocal cursorcolumn!<CR>
 nnoremap cov :call VimRC_ToggleVirtualedit()<CR>
 nnoremap cow :setlocal wrap!<CR>
