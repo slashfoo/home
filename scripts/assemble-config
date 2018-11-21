@@ -1,0 +1,487 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# See USAGE_MSG and HELP_MSG for an overview of what this program does.
+
+setopt no_unset
+setopt pipe_fail
+
+typeset VERBOSE="${VERBOSE:-}"
+
+case "${VERBOSE}" in
+    0) ;& [Nn]{,[Oo]}) ;& [Ff]{,[Aa][Ll][Ss][Ee]) ;& '')
+        VERBOSE='no';;
+    *)
+        VERBOSE='yes';;
+esac
+
+if [[ "${VERBOSE}" == 'yes' ]]; then
+    setopt xtrace
+fi
+
+typeset PREFIX='config'
+typeset VIMFT='conf'
+typeset TARGET_USER="${USER:-${LOGNAME:-fallback_username}}"
+typeset TARGET_HOST="${HOST:-$(hostname -s || echo 'fallback_hostname')}"
+typeset -TU BASEDIRS basedirs=( ${(ps#:#)ASSEMBLECONFIG_BASEDIRS:-} ) ':'
+typeset -i DEPTH=1
+
+typeset COMM_S='# '
+typeset COMM_E=''
+typeset FORCE='no'
+typeset LIST_ONLY='no'
+typeset TARGET_FILEPATH=''
+typeset TIMESTAMP_FMT="%D{%Y-%m-%dT%H:%M:%S.%6.%z}"
+typeset RESTORE_STDOUT=no
+
+unsetopt err_exit err_return
+typeset SCRIPT_NAME="${0:t}"
+typeset USAGE_MSG
+typeset HELP_MSG
+read -r -d '' USAGE_MSG <<-EOUSAGE
+	Usage:	${SCRIPT_NAME} [OPTIONS] [BASE_DIR ...]
+	      	${SCRIPT_NAME} -x
+	      	${SCRIPT_NAME} -h
+EOUSAGE
+
+read -r -d '' HELP_MSG <<-EOHELP
+	Assembles configuration files from a set of files determined by filename
+	and file path patterns. Useful when systems do not natively/reliably offer
+	include directives.
+
+	When used without any parameters, the usage information is shown. If you'd
+	like to run without using any command-line arguments, use the '-x' option.
+
+	Files matched are included if the full path matches the PATHPREFIX
+	immediately followed by one of patterns below:
+	    HEADS:
+	        head
+	        host.\${TARGET_HOST}.head
+	        user.\${TARGET_USER}.head
+	    SPECIFICBODY:
+	        host.\${TARGET_HOST}.*
+	        user.\${TARGET_USER}.*
+	    GENERICBODY:
+	        *
+	    TAILS:
+	        tail
+	        host.\${TARGET_HOST}.tail
+	        user.\${TARGET_USER}.tail
+
+	    Files that match PATHPREFIX immediately followed by one of the
+	    patterns/conditions below are discarded:
+	        host.* (when not matching host.\${TARGET_HOST}*)
+	        user.* (when not matching user.\${TARGET_USER}*)
+
+	    Where the PATHPREFIX pattern matches paths contained in the base
+	    directories pertaining to filenames that start with '\${PREFIX}.' or
+	    files inside a directory named '\${PREFIX}.base/'
+
+	Placeholders for sections appear in the order above. If a file matches more
+	than one pattern, it's included only on the placeholder of the first
+	pattern matched. If more than one file match a pattern or set of patterns
+	on the same section above, they are sorted by running the command
+	'LC_COLLATE=C sort -V' on lines with the following structure:
+	    BASENAME_WITHOUT_PATHPREFIX + ' ' + FULL_PATH
+	
+	The program also tries to remove vim modelines from base files.
+
+	Examples:
+	    # list files that would match without other parameters
+	    ${SCRIPT_NAME} -x
+	    ${SCRIPT_NAME} -l
+
+	    # Create your ~/.ssh/config from files in a directory + verbose
+	    ${SCRIPT_NAME} -v -f ~/.ssh/config ~/Repos/home.git/
+
+	    or
+
+	    typeset -x ASSEMBLECONFIG_BASEDIRS=~/Repos/home.git
+	    ${SCRIPT_NAME} -v -f ~/.ssh/config
+
+	Arguments:
+	      	BASE_DIR     	Directory to perform searches on. May be specified
+	      	             	multiple times. Defaults to the contents of the
+	      	             	ASSEMBLECONFIG_BASEDIRS env variable (:-separated
+	      	             	list).
+
+	      	             	If unspecified the directory of the parameter '-f'
+	      	             	is assumed.
+
+	Options:
+	      	-c COMMENT_S 	Start of a comment line, defaults to '${COMM_S}'.
+	      	-C COMMENT_E 	End of a comment line, defaults to '${COMM_E}'.
+	      	-d DEPTH     	Maximum depth to traverse in the base_dirs.
+	      	             	Defaults to ${DEPTH}. 0 means in the base_dirs
+	      	             	themselves, 1 means one subdirectory in, etc.
+	      	-f FILEPATH  	Destination for the generated config file.
+	      	             	If left unspecified, the '-l' is assumed. If '-'
+	      	             	(dash) is specified, write the output to stdout.
+	      	-F           	Write changes to the target file even if the file
+	      	             	already exists.
+	      	-H HOSTNAME  	The hostname to filter base files for.
+	      	             	Defaults to the current (short) hostname
+	      	             	'${TARGET_HOST}'.
+	      	-l           	List the matching files instead of generating a
+	      	             	config.
+	      	-p PREFIX    	The prefix used to identify the base files.
+	      	             	This will make it
+	      	             	so that only files with path patterns to match are
+	      	             	'*/PREFIX.*' or '*/PREFIX.base/*'.
+	      	             	Defaults to '${PREFIX}'.
+	      	-u USER      	The username or uid to filter base files for.
+	      	             	Defaults to the current username '${TARGET_USER}'.
+	      	-V VIMFT     	The filetype to set on the target_file's modeline.
+	      	             	Defaults to '${VIMFT}'.
+	      	-v           	Show messages detailing steps of the execution.
+	      	             	This flag will be enabled and the xtrace shell
+	      	             	option will be set if env variable VERBOSE is set
+	      	             	doesn't match the glob patterns: '' (blank), 0,
+	      	             	[Nn], [Nn][Oo], [Ff], [Ff][Aa][Ll][Ss][Ee]
+	      	-x           	Execute the script even if there are no specified
+	      	             	command-line arguments or options.
+	      	-h           	Show this help message.
+EOHELP
+setopt err_exit err_return
+
+error-msg () {
+    {
+        setopt local_options
+        unsetopt xtrace
+    } >/dev/null 2>&1
+    echo -n "Error: " >&2
+    echo "${@}" >&2
+    echo '' >&2
+    print-usage
+    exit 1
+}
+
+debug-msg () {
+    {
+        setopt local_options
+        unsetopt xtrace
+    } >/dev/null 2>&1
+    if [[ "${#}" -eq 0 ]] || [[ "${VERBOSE}" != 'yes' ]]; then
+        return
+    fi
+    echo -n "> ${(%):-${TIMESTAMP_FMT}} | " >&2
+    echo "${@}" >&2
+}
+
+debug-cat () {
+    {
+        setopt local_options
+        unsetopt xtrace
+    } >/dev/null 2>&1
+    if [[ "${VERBOSE}" != 'yes' ]]; then
+        return
+    fi
+    local IFS=''
+    if [[ ! -t 0 ]]; then
+        local line
+        while read -r line; do
+            debug-msg "${line}"
+        done
+    fi
+    while [[ "${#}" -gt 0 ]]; do
+        local filename="${1:-}"; shift
+        if [[ ! -s "${filename}" ]]; then
+            debug-msg "File ${filename:a} does not exist, or is blank."
+            continue
+        fi
+        local line
+        debug-msg "BEGINNING OF CONTENTS OF ${filename:a}"
+        while read -r line; do
+            debug-msg "${line}"
+        done < <(nl -ba -w6 -nrn "${filename}")
+        debug-msg "      END OF CONTENTS OF ${filename:a}"
+    done
+}
+
+print-usage () {
+    {
+        setopt local_options
+        unsetopt xtrace
+    } >/dev/null 2>&1
+    echo "${USAGE_MSG}" >&2
+}
+
+print-help () {
+    {
+        setopt local_options
+        unsetopt xtrace
+    } >/dev/null 2>&1
+    local pager="${PAGER:-$(command -v less 2>/dev/null)}"
+    if [[ -z "${pager:-}" ]]; then
+        pager='cat'
+    fi
+    {
+        echo "${USAGE_MSG}"
+        echo ''
+        echo "${HELP_MSG}"
+    } | ${pager}
+}
+
+commentize () {
+    local line
+    local IFS=
+
+    if [[ -z "${COMM_E}" ]]; then
+        while read -r line; do
+            if [[ -z "${line}" ]]; then
+                local trailing_whitespaces="${COMM_S##*[^ ]}"
+                echo "${COMM_S%${trailing_whitespaces}}"
+                continue
+            fi
+            printf "%s%s\n" "${COMM_S}" "${line}"
+        done
+        return
+    fi
+    while read -r line; do
+        if [[ -z "${line}" ]]; then
+            local trailing_whitespaces="${COMM_S##*[^ ]}"
+            echo "${COMM_S%${trailing_whitespaces}}"
+            continue
+        fi
+        printf "%s%-65s%s\n" "${COMM_S}" "${line}" "${COMM_E}"
+    done
+}
+
+file-block () {
+    local IFS=
+    local line
+    local prev_line
+    local filepath="${1}"
+    commentize <<<"CONTENTS OF '${basefile}' {{{"
+    while read -r line; do
+        [[ "${line}" != "${COMM_S}vim:"* ]] || continue
+        echo "${line}"
+        prev_line="${line}"
+    done <"${filepath}"
+    [[ -z "${prev_line}" ]] || echo ''
+    commentize <<<"CONTENTS OF '${basefile}' }}}"
+}
+
+typeset -i RETCODE=0
+typeset DO_RUN='no'
+typeset -a ARGUMENTS=()
+while [[ "${#}" -gt 0 ]]; do
+
+    typeset -i10 OPTIND=0
+    while getopts ":vxhc:C:d:f:FH:lp:u:V:" opt; do
+        case "${opt}" in
+            h)
+                print-help; exit 0;;
+            v)
+                VERBOSE='yes'; DO_RUN='yes';;
+            x)
+                DO_RUN='yes';;
+            c)
+                COMM_S="${OPTARG}"; DO_RUN='yes';;
+            C)
+                COMM_E="${OPTARG}"; DO_RUN='yes';;
+            d)
+                DEPTH="${OPTARG}"; DO_RUN='yes';;
+            f)
+                TARGET_FILEPATH="${OPTARG}"; DO_RUN='yes';;
+            F)
+                FORCE='yes'; DO_RUN='yes';;
+            H)
+                TARGET_HOST="${OPTARG}"; DO_RUN='yes';;
+            l)
+                LIST_ONLY='yes'; DO_RUN='yes';;
+            p)
+                PREFIX="${OPTARG}"; DO_RUN='yes';;
+            u)
+                TARGET_USER="${OPTARG}"; DO_RUN='yes';;
+            V)
+                VIMFT="${OPTARG}"; DO_RUN='yes';;
+            :)
+                error-msg "'-${OPTARG}' requires a parameter";;
+            \?)
+                error-msg "'-${OPTARG}' is not a valid option/argument.";;
+        esac
+    done
+    shift $(( OPTIND - 1 ))
+
+    [[ "${#}" -ge 1 ]] || break
+    ARGUMENTS+=( "${1}" )
+    shift
+done
+unset opt
+unset OPTIND
+unset OPTERR
+unset OPTARG
+
+if [[ "${#}" -eq 0 ]] && [[ "${DO_RUN}" != 'yes' ]]; then
+    print-usage
+    exit 0
+elif [[ "${#ARGUMENTS[@]}" -ne 0 ]]; then
+    basedirs=( "${(@)ARGUMENTS}" )
+fi
+
+if [[ -z "${TARGET_FILEPATH}" ]]; then
+    LIST_ONLY=yes
+elif [[ "${#basedirs[@]}" -eq 0 ]] && [[ "${TARGET_FILEPATH}" != '-' ]]; then
+    basedirs+=( "${TARGET_FILEPATH:a:h}" )
+fi
+
+basedirs=( "${(@)basedirs:a}" )
+
+debug-cat <<-EOMSG
+	Execution parameters:
+	    $(typeset VERBOSE)
+	    $(typeset PREFIX)
+	    $(typeset VIMFT)
+	    $(typeset TARGET_USER)
+	    $(typeset TARGET_HOST)
+	    $(typeset basedirs)
+	    $(typeset DEPTH)
+	    $(typeset FORCE)
+	    $(typeset LIST_ONLY)
+	    $(typeset TARGET_FILEPATH)
+EOMSG
+
+typeset FIND_DEPTH=$(( DEPTH + 1 ))
+typeset -a sorted_raw_matches=( "${(f)$(
+    for basedir in "${(@)basedirs}"; do
+        debug-msg "Running find command in ${basedir}"
+        find "${basedir}" \
+            -maxdepth "${FIND_DEPTH}" \
+            -type f \
+            '(' -name "${PREFIX}.*" -o -path "*/${PREFIX}.base/*" ')'
+    done \
+        | while read -r filename; do
+            echo "${${filename:t}/${PREFIX}./} ${filename:a}"
+        done | LC_COLLATE=C sort -V
+)}" )
+
+if [[ "${#sorted_raw_matches[@]}" -eq 1 ]] && \
+   [[ "${sorted_raw_matches[1]}" == '' ]]; then
+    error-msg "Found 0 (unfiltered) matches in total."
+    exit 1
+elif [[ "${#sorted_raw_matches[@]}" -eq 0 ]]; then
+    error-msg "Found 0 (unfiltered) matches in total."
+    exit 1
+fi
+debug-msg "Found ${#sorted_raw_matches[@]} (unfiltered) matches in total."
+
+typeset -a head_elems=()
+typeset -a generic_body_elems=()
+typeset -a specific_body_elems=()
+typeset -a tail_elems=()
+typeset match
+for match in "${(@)sorted_raw_matches}"; do
+    typeset match_nopre=
+    typeset match_path=
+    read -r match_nopre match_path <<<"${match}"
+    case "${match_nopre}" in
+        host.${TARGET_HOST}.head) ;&
+        user.${TARGET_USER}.head) ;&
+        head)
+            head_elems+=( "${match_path}" )
+            ;;
+        host.${TARGET_HOST}) ;&
+        host.${TARGET_HOST}.*) ;&
+        user.${TARGET_USER}) ;&
+        user.${TARGET_USER}.*)
+            specific_body_elems+=( "${match_path}" );;
+        host.*) ;&
+        user.*) ;&
+        '')
+            debug-msg "Discarding element ${match_path} from matches.";;
+        *)
+            generic_body_elems+=( "${match_path}" );;
+        host.${TARGET_HOST}.tail) ;&
+        user.${TARGET_USER}.tail) ;&
+        tail)
+            tail_elems+=( "${match_path}" )
+            ;;
+    esac
+done
+typeset -a all_matches=(
+    "${(@)head_elems}"
+    "${(@)specific_body_elems}"
+    "${(@)generic_body_elems}"
+    "${(@)tail_elems}"
+)
+if [[ "${#all_matches[@]}" -eq 0 ]]; then
+    error-msg "Found ${#all_matches[@]} (after filters) matches in total."
+    exit 1
+fi
+debug-msg "Found ${#all_matches[@]} (after filters) matches in total."
+
+if [[ "${LIST_ONLY}" == 'yes' ]]; then
+    if [[ ! -t 1 ]]; then
+        echo "${(F)all_matches}"
+    else
+        echo "${(F)all_matches}" \
+            | nl -ba -w6 -nrn
+    fi
+    exit 0
+fi
+
+if [[ "${TARGET_FILEPATH}" != '-' ]]; then
+    if [[ -e "${TARGET_FILEPATH}" ]] && [[ "${FORCE}" != 'yes' ]]; then
+        error-msg "File ${TARGET_FILEPATH} exists, and Force is set to 'no'."
+        exit 1
+    elif [[ ! -e "${TARGET_FILEPATH}" ]]; then
+        debug-msg "Creating file at ${TARGET_FILEPATH}."
+        install --mode='u=rw,go=' /dev/null "${TARGET_FILEPATH}"
+    fi
+    RESTORE_STDOUT=yes
+    exec 3>&1
+    exec 1>"${TARGET_FILEPATH}"
+fi
+
+debug-msg "Writing header"
+commentize <<-EOHEADER
+	WARNING:
+	    This file is automatically generated by the script at
+	    ${0:A}
+
+	    As such, it may be overwritten. Please modify the base
+	    files used to generate this file instead of making
+	    changes to this file directly.
+EOHEADER
+echo ''
+
+debug-msg "Writing basefile list with ${#all_matches[@]} files."
+commentize <<<"BASEFILES {{{"
+echo ''
+commentize <<<"Base files used to generate this file:"
+typeset basefile
+for basefile in "${(@)all_matches}"; do
+    commentize <<<"  - ${basefile}"
+done
+echo ''
+commentize <<<"BASEFILES }}}"
+
+echo ''
+for basefile in "${(@)all_matches}"; do
+    debug-msg "Writing block for file ${basefile}."
+    file-block "${basefile}"
+done
+
+debug-msg "Writing footer"
+echo ''
+commentize <<-EOFOOTER
+	vim: set ft=${VIMFT} foldmethod=marker foldenable:
+EOFOOTER
+
+if [[ "${RESTORE_STDOUT}" == 'yes' ]]; then
+    exec 1>&3
+    exec 3>&-
+fi
