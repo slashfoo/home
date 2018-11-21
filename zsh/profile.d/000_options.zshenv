@@ -20,3 +20,13 @@
 setopt auto_continue
 setopt numeric_glob_sort
 setopt pipe_fail
+
+() {
+    # in case of Windows WSL, work around an annoyance when backgrounding
+    # processes documented in: https://github.com/Microsoft/WSL/issues/1887
+    unsetopt local_options
+    local platform="$(uname -a 2>/dev/null)"
+    if [[ "${platform}" == *"Microsoft"* ]]; then
+        unsetopt bg_nice
+    fi
+} >/dev/null
