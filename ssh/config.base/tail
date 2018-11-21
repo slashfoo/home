@@ -1,0 +1,52 @@
+# vim: set ft=sshconfig foldmethod=marker foldenable:
+
+# Default configuration that applies after all other stuff has been set
+Host *
+    AddKeysToAgent no
+    StreamLocalBindMask 0177
+    StreamLocalBindUnlink no
+    SendEnv LANG LC_*
+    SendEnv WINDOW
+    SendEnv TERM
+    SendEnv REMOTE_UID
+    SendEnv TZ
+    SendEnv COLORFGBG
+    # LogLevel QUIET
+    # LogLevel FATAL
+    # LogLevel ERROR
+    LogLevel INFO
+    # LogLevel VERBOSE
+    # LogLevel DEBUG1
+    # LogLevel DEBUG2
+    # LogLevel DEBUG3
+    PermitLocalCommand no
+    # IdentitiesOnly yes
+    BatchMode no
+    PreferredAuthentications publickey,keyboard-interactive,password
+    # ClearAllForwardings yes
+    ConnectTimeout 5
+    ConnectionAttempts 5
+    PubkeyAuthentication yes
+    PasswordAuthentication no
+    ChallengeResponseAuthentication no
+    KbdInteractiveAuthentication no
+    NumberOfPasswordPrompts 1
+    StrictHostKeyChecking ask
+    CheckHostIP yes
+    AddressFamily any
+    VisualHostKey no
+    HashKnownHosts no
+    UserKnownHostsFile ~/.ssh/known_hosts
+    EscapeChar none
+    Port 22
+    GatewayPorts no
+    ForwardAgent no
+    ForwardX11 no
+    ForwardX11Trusted no
+    ExitOnForwardFailure yes
+    ProxyCommand none
+    ControlMaster auto
+    # ControlPath ~/.ssh/sock/%r@%n@%h:%p
+    # ControlPath ~/.ssh/sock/%C
+    ControlPath ~/.ssh/sock/%r@%h:%p
+    ControlPersist yes

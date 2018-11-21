@@ -1,0 +1,26 @@
+# vim: set ft=sshconfig foldmethod=marker foldenable:
+
+# In case I want to use git, then use git@ or -l git
+Host bitbucket.org
+    # nologin
+    Hostname bitbucket.org
+    User hg
+    LogLevel QUIET
+    CheckHostIP no
+    UserKnownHostsFile ~/.ssh/known_hosts.public-vcs
+
+Host github.com
+    # nologin
+    Hostname github.com
+    User git
+    LogLevel QUIET
+    CheckHostIP no
+    UserKnownHostsFile ~/.ssh/known_hosts.public-vcs
+
+Host gist gist.github.com
+    # nologin
+    Hostname gist.github.com
+    User git
+    LogLevel QUIET
+    CheckHostIP no
+    UserKnownHostsFile ~/.ssh/known_hosts.public-vcs
