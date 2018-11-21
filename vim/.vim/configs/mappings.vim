@@ -61,7 +61,7 @@ if mapcheck('<plug>(interestingwords#resetwords)') != ''
     xmap <silent> <Leader># <plug>(interestingwords#highlight-sel-10)
     xmap <silent> <Leader>! <plug>(interestingwords#highlight-sel-11)
 
-    nnoremap coy :call interestingwords#toggle_syntax()<CR>
+    nnoremap <silent> coy :call interestingwords#toggle_syntax()<CR>
 endif
 
 " vim: foldmethod=marker foldenable
