@@ -38,6 +38,10 @@ typeset TARGET_HOST="${HOST:-$(hostname -s || echo 'fallback_hostname')}"
 typeset -TU BASEDIRS basedirs=( ${(ps#:#)ASSEMBLECONFIG_BASEDIRS:-} ) ':'
 typeset -i DEPTH=1
 
+typeset DO_BACKUP=no
+typeset BACKUP_SUFFIX=''
+typeset BK_T_FMT="%D{%Y-%m-%dT%H%M%S.%3.}"
+typeset BACKUP_FILEPATH=''
 typeset COMM_S='# '
 typeset COMM_E=''
 typeset FORCE='no'
@@ -84,6 +88,7 @@ read -r -d '' HELP_MSG <<-EOHELP
 	    patterns/conditions below are discarded:
 	        host.* (when not matching host.\${TARGET_HOST}*)
 	        user.* (when not matching user.\${TARGET_USER}*)
+	        *~ (anything terminated in the character '~' is discarded).
 
 	    Where the PATHPREFIX pattern matches paths contained in the base
 	    directories pertaining to filenames that start with '\${PREFIX}.' or
@@ -121,6 +126,13 @@ read -r -d '' HELP_MSG <<-EOHELP
 	      	             	is assumed.
 
 	Options:
+	      	-b           	Enable backup-then-write-over the target file.
+	      	-B BK_SUFFIX 	Suffix to add (after a dot) to backups, defaults to
+	      	             	the date in the format prescribed by ISO 8601,
+	      	             	specifically YYYY-mm-ddTHHMMSS.sss, followed by a
+	      	             	tilde '~'.
+	      	             	When provided, the '-b' flag is enabled
+	      	             	automatically.
 	      	-c COMMENT_S 	Start of a comment line, defaults to '${COMM_S}'.
 	      	-C COMMENT_E 	End of a comment line, defaults to '${COMM_E}'.
 	      	-d DEPTH     	Maximum depth to traverse in the base_dirs.
@@ -286,7 +298,7 @@ typeset -a ARGUMENTS=()
 while [[ "${#}" -gt 0 ]]; do
 
     typeset -i10 OPTIND=0
-    while getopts ":vxhc:C:d:f:FH:lp:u:V:" opt; do
+    while getopts ":vxhbB:c:C:d:f:FH:lp:u:V:" opt; do
         case "${opt}" in
             h)
                 print-help; exit 0;;
@@ -294,6 +306,13 @@ while [[ "${#}" -gt 0 ]]; do
                 VERBOSE='yes'; DO_RUN='yes';;
             x)
                 DO_RUN='yes';;
+            b)
+                DO_BACKUP='yes'; DO_RUN='yes';;
+            B)
+                BACKUP_SUFFIX="${OPTARG}";
+                DO_BACKUP='yes';
+                DO_RUN='yes';
+                ;;
             c)
                 COMM_S="${OPTARG}"; DO_RUN='yes';;
             C)
@@ -406,6 +425,7 @@ for match in "${(@)sorted_raw_matches}"; do
             specific_body_elems+=( "${match_path}" );;
         host.*) ;&
         user.*) ;&
+        *~) ;&
         '')
             debug-msg "Discarding element ${match_path} from matches.";;
         *)
@@ -440,10 +460,20 @@ if [[ "${LIST_ONLY}" == 'yes' ]]; then
 fi
 
 if [[ "${TARGET_FILEPATH}" != '-' ]]; then
-    if [[ -e "${TARGET_FILEPATH}" ]] && [[ "${FORCE}" != 'yes' ]]; then
-        error-msg "File ${TARGET_FILEPATH} exists, and Force is set to 'no'."
-        exit 1
-    elif [[ ! -e "${TARGET_FILEPATH}" ]]; then
+    if [[ -e "${TARGET_FILEPATH}" ]]; then
+        if [[ "${DO_BACKUP}" != 'yes' ]] && [[ "${FORCE}" != 'yes' ]]; then
+            error-msg "File ${TARGET_FILEPATH} exists, and '-F' nor '-b' were provided."
+            exit 1
+        elif [[ "${DO_BACKUP}" == 'yes' ]]; then
+            BACKUP_FILEPATH="${TARGET_FILEPATH}.${BACKUP_SUFFIX:-${(%):-${BK_T_FMT}}~}"
+            if [[ -e "${BACKUP_FILEPATH}" ]] && [[ "${FORCE}" != 'yes' ]]; then
+                error-msg "File (intended backup destination) ${BACKUP_FILEPATH} already exists and '-F' was not specified."
+                exit 1
+            fi
+            debug-msg "Backing up ${TARGET_FILEPATH}"
+            debug-msg "$(cp -v "${TARGET_FILEPATH}" "${BACKUP_FILEPATH}")"
+        fi
+    else
         debug-msg "Creating file at ${TARGET_FILEPATH}."
         install --mode='u=rw,go=' /dev/null "${TARGET_FILEPATH}"
     fi
