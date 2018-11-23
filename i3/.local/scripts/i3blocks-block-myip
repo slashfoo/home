@@ -1,0 +1,51 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Block that shows, depending on the instance name (either 4 or 6, default is
+# 4) shows the publicly visible ipv4 or ipv6 address of the system. If none is
+# available or takes longer than 1 second to determine, the block is left empty
+# (hidden)
+
+setopt err_exit
+setopt err_return
+setopt no_unset
+setopt pipe_fail
+
+typeset addr_family="${BLOCK_INSTANCE:-4}"
+if [[ "${addr_family}" != '6' ]] && [[ "${addr_family}" != '4' ]]; then
+    exit
+fi
+
+typeset -a cmd=(
+    dig -"${addr_family}" TXT \
+        +timeout=1 +short \
+        o-o.myaddr.l.google.com @ns1.google.com
+)
+
+typeset addr="$( (
+    exec 2>/dev/null
+    exec "${(@)cmd}" || :
+) | sed -E -n -e 's#"(.*)"#\1#p' || : )"
+
+[[ -n "${addr}" ]] || exit
+printf "%s\n" "${addr}"
+[[ "${addr_family}" == '4' ]] || printf "\n"
+
+case "${BLOCK_BUTTON:-}" in
+    1|2|3)
+        echo "${addr}" | xclip -in -selection clipboard;
+        notify-send 'Copied address to clipboard'
+        ;;
+esac

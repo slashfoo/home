@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Float the current window, resize to small, move to bottom-right and set
+# sticky
+
+from pprint import pprint as pp
+
+import i3
+
+MARGINS = 25
+
+if __name__ == '__main__':
+    for ws in i3.get_workspaces():
+        if ws['focused']:
+            break
+    rect = ws.get('rect')
+    height, width, x, y = [v for k,v in sorted(rect.items())]
+
+    new_height = int(height / 3)
+    new_width = int(width / 3)
+
+    new_x = int((width - new_width + x) - MARGINS)
+    new_y = int((height - new_height + y) - MARGINS)
+
+    i3._i3_msg('floating enable')
+    i3._i3_msg('sticky enable')
+    i3._i3_msg('resize set {width} px {height} px'.format(
+        height=new_height,
+        width=new_width
+    ))
+    i3._i3_msg('move position {x} {y}'.format(
+        x=new_x,
+        y=new_y
+    ))

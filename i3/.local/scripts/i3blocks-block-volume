@@ -1,0 +1,91 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Block that shows volume and mute/cap status of Master/Capture controls of a
+# given device via amixer. One more parameters can be specified :-separated,
+# to specify the device to use. Defaults are Master and default.
+#
+# Examples:
+#   instance=Master:default
+#
+#   and
+#
+#   instance=Capture:default
+
+setopt err_exit
+setopt err_return
+setopt no_unset
+setopt pipe_fail
+
+typeset -a PARAMETERS=( "${(s.:.):-${BLOCK_INSTANCE:-}}" )
+
+typeset scontrol="${PARAMETERS[1]:-Master}"
+typeset device="${PARAMETERS[2]:-default}"
+
+if [[ "${scontrol}" != 'Master' ]] && [[ "${scontrol}" != 'Capture' ]]; then
+    exit
+elif [[ "${scontrol}" == 'Master' ]]; then
+    # regular icons
+    typeset icon=$'\uf028'
+    typeset icon_mute=$'\uf2e2'
+    typeset mute_cmd='mute'
+else
+    # capture icons
+    typeset icon=$'\uf130'
+    typeset icon_mute=$'\uf131'
+    typeset mute_cmd='nocap'
+fi
+
+typeset color=''
+
+typeset lvolume=''
+typeset rvolume=''
+typeset lmuted=''
+typeset rmuted=''
+
+typeset volume=''
+
+case "${BLOCK_BUTTON:-}" in
+    1) amixer -D "${device}" set "${scontrol}" toggle >/dev/null 2>&1 || :;;
+    2) amixer -D "${device}" set "${scontrol}" '50%' "${mute_cmd}" >/dev/null 2>&1 || :;;
+    3) amixer -D "${device}" set "${scontrol}" "${mute_cmd}" >/dev/null 2>&1 || :;;
+esac
+
+amixer -D "${device}" get "${scontrol}" | while read -r line; do
+    case "${line}" in
+        *Left*\[off\]) lmuted=yes;|
+        *Right*\[off\]) rmuted=yes;|
+        *Left*\[*%\]*) lvolume="${${line#*\[}%%\%*}";|
+        *Right*\[*%\]*) rvolume="${${line#*\[}%%\%*}";|
+    esac
+done
+
+if [[ "${lmuted}" == "${rmuted}" ]] && [[ "${lmuted}" == 'yes' ]]; then
+    icon="${icon_mute}"
+    color='#DBA656'
+fi
+
+printf -v volume "%3d%%" "${lvolume}"
+if [[ "${lvolume}" != "${rvolume}" ]]; then
+    printf -v volume "%3d%%/%3d%%" "${lvolume}" "${rvolume}"
+fi
+
+if [[ ! -t 1 ]] && [[ -n "${icon}" ]]; then
+    icon="<span font_desc='Font Awesome 5 Free'>${icon}</span>"
+fi
+printf "%s%-4s\n%s%-4s\n" \
+    "${icon:+${icon} }" "${volume}" \
+    "${icon:+${icon} }" "${volume}"
+[[ -z "${color}" ]] || echo "${color}"

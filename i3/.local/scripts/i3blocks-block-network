@@ -1,0 +1,88 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Block that shows the status of a network adapter, wireless or otherwise, by
+# name drawn from the instance variable. Defaults to '' (blank), so if no
+# instance is specified, or if referring to a non-existent interface, the
+# block is left empty (effectively hidden).
+
+setopt err_exit
+setopt no_unset
+setopt pipe_fail
+
+typeset iface="${BLOCK_INSTANCE:-}"
+
+typeset iface_dir="/sys/class/net/${iface}"
+if [[ -z "${iface}" ]] || [[ ! -d "${iface_dir}" ]]; then
+    exit
+fi
+
+typeset operstate
+read -r operstate <"${iface_dir}/operstate" || :
+
+typeset speed
+read -r speed <"${iface_dir}/speed" || :
+
+typeset -a ipv4=( $(
+    ip -4 addr show "${iface}" \
+        | grep inet \
+        | sed -E -e 's#^[ ]+##' \
+        | cut -f2 -d' '
+) )
+
+
+typeset -a nminfo=()
+() {
+    local IFS=:
+    nminfo=( $(
+        nmcli -t -f device,active,ssid,bars,freq,chan,rate dev wifi \
+            | sed -E -n -e "s/^${iface}:yes://p" \
+            || :
+    ) )
+}
+
+typeset extra=''
+if [[ "${#nminfo[@]}" -eq 5 ]]; then
+    n_ssid="${nminfo[1]}"
+    n_bars="${nminfo[2]}"
+    n_freq="${${(z)nminfo[3]}[1]}"
+    if [[ "${n_freq}" -gt 5000 ]]; then
+        n_freq='5GHz'
+    else
+        n_freq='2.4GHz'
+    fi
+    n_chan="${nminfo[4]}"
+
+    speed="${nminfo[5]:-}"
+    extra="${n_ssid} ${n_bars} (${n_freq} ch${n_chan} @ ${speed})"
+else
+    speed="${speed:+${speed} Mbits/s}"
+    extra="(${speed})"
+fi
+
+if [[ -z "${speed}${operstate}" ]]; then
+    exit
+fi
+
+if [[ "${operstate}" != 'up' ]]; then
+    printf "%s: down\n%s: down\n%s\n" \
+        "${iface}" "${iface}" "#828282"
+    exit
+fi
+
+printf "%s: %s %s\n%s: %s\n%s\n" \
+    "${iface}" "${extra}" "${ipv4}" \
+    "${iface}" "${ipv4}" \
+    '#A1B56C'

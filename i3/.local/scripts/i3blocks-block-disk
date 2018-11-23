@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Block that shows hard disk utilization relative to a directory provided in
+# the 'instance' variable. Optionally, additional to the directory, a threshold
+# to alarm at if the percentage utilization goes above it can be provided.
+# Defaults to 60 (without the percent sign).
+#
+# Example:
+#   - instance=/home/mrdoctor:75
+
+set -eu -o pipefail
+
+IFS=':'
+typeset -a PARAMETERS=( ${BLOCK_INSTANCE:-} )
+unset IFS
+
+typeset directory="${PARAMETERS[0]:-$HOME}"
+
+typeset pretty_dir="${directory/${HOME}/\~}"
+
+typeset threshold="${PARAMETERS[1]:-60}"
+typeset bad_color='#BF5D5A'
+
+typeset fstype
+typeset use
+typeset avail
+typeset size
+typeset use_pcent
+typeset target
+
+read -r fstype use avail size use_pcent target < <(
+    df --no-sync -a -h \
+        --output=fstype,used,avail,size,pcent,target "${directory}" \
+        2>/dev/null | sed 1d
+) || :
+
+if [[ -z "${fstype}" ]]; then
+    exit
+fi
+if [[ "${pretty_dir}" != "${target}" ]]; then
+    pretty_dir="${directory} @ ${target}"
+fi
+printf "%s\n%s\n" \
+    "${pretty_dir}:${fstype} ${use}/${size} (${use_pcent})" \
+    "${avail} (${use_pcent})"
+[[ "${use_pcent%\%}" -lt "${threshold}" ]] || echo "${bad_color}"

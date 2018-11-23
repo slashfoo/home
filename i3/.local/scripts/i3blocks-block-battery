@@ -1,0 +1,129 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Block that shows the battery characteristics for a provided power_supply (in
+# acpi terms) of a system. Two colon-separated additional arguments can be
+# provided, which will be a low and high mark. They default to 30 and 80.
+# Percentage of battery power left, below the low mark, are highlighted red,
+# and above the high mark are highlighted green. Anything else is yellow.
+#
+# Example:
+#     instance=BAT0:15:80
+
+setopt err_exit
+setopt err_return
+setopt no_unset
+setopt pipe_fail
+
+typeset -a PARAMETERS=( "${(s.:.):-${BLOCK_INSTANCE:-}}" )
+
+typeset battery="${PARAMETERS[1]:-BAT0}"
+typeset battery_dir="/sys/class/power_supply/${battery}"
+typeset low_mark="${PARAMETERS[2]:-30}"
+typeset high_mark="${PARAMETERS[3]:-80}"  # I did naaaaaaaht! Oh, hi mark.
+typeset color='#DBA656'
+
+typeset color_good='#A1B56C'
+typeset color_bad='#BF5D5A'
+
+if [[ ! -d "${battery_dir}" ]]; then
+    exit
+fi
+
+typeset icon_full=$'\uf240'
+typeset icon_75_pcent=$'\uf241'
+typeset icon_half=$'\uf242'
+typeset icon_25_pcent=$'\uf243'
+typeset icon_empty=$'\uf244'
+typeset icon_charging=$'\uf376'
+
+typeset -F 2 pcent_left
+typeset -i10 power_now   # how much am I drawing right this second? in W
+typeset -i10 energy_now  # How much juice is left. In Wh
+typeset -i10 energy_full # Usable maximum capacity (<=.../energy_full_design)
+typeset      charge_status
+typeset -i10 estimated_s_left
+typeset      left_h
+typeset      left_m
+typeset      left_s
+typeset pretty_t_left
+
+read -r power_now     <"${battery_dir}/power_now"
+read -r energy_now    <"${battery_dir}/energy_now"
+read -r energy_full   <"${battery_dir}/energy_full"
+read -r charge_status <"${battery_dir}/status"
+
+pcent_left=$(( (energy_now*100.0) / (energy_full*1.0) ))
+typeset text_long=''
+typeset text_short=''
+
+typeset -i10 energy_left=$(( energy_now ))
+if [[ "${charge_status}" == "Charging" ]]; then
+    energy_left=$(( energy_full - energy_now ))
+fi
+
+if [[ "${power_now}" -ne 0 ]]; then
+    estimated_s_left=$(( (energy_left*1.0) / (power_now*1.0) * 3600 ))
+    left_h=$(( estimated_s_left / 3600 ))
+    left_m=$(( (estimated_s_left % 3600 ) / 60 ))
+    left_s=$(( (estimated_s_left % 3600 ) % 60 ))
+
+    [[ "${left_h}" -ne 0 ]] || left_h=''
+    [[ "${left_m}" -ne 0 ]] || left_m=''
+    [[ "${left_s}" -ne 0 ]] || left_s=''
+
+    pretty_t_left="${left_h:+${left_h}h}"
+    pretty_t_left+="${pretty_t_left:+ }${left_m:+${(~l:3::0:):-${left_m}m}}"
+    pretty_t_left+="${pretty_t_left:+ }${left_s:+${(~l:3::0:):-${left_s}s}}"
+
+    printf -v text_long "%6.2f%% %-13s" "${pcent_left}" "${pretty_t_left}"
+    printf -v text_short "%3.0f%% %02d:%02d" \
+        "${pcent_left}" "${left_h}" "${left_m}"
+else
+    printf -v text_long "%6.2f%% N/A          " "${pcent_left}"
+    printf -v text_short "%3.0f%% N/A  " "${pcent_left}"
+fi
+
+if [[ "${pcent_left}" -le "${low_mark}" ]]; then
+    color="${color_bad}"
+elif [[ "${pcent_left}" -ge "${high_mark}" ]]; then
+    color="${color_good}"
+fi
+
+if [[ "${pcent_left}" -gt 75 ]]; then
+    icon="${icon_75_pcent}"
+elif [[ "${pcent_left}" -gt 50 ]]; then
+    icon="${icon_half}"
+elif [[ "${pcent_left}" -gt 25 ]]; then
+    icon="${icon_25_pcent}"
+else
+    icon="${icon_empty}"
+fi
+
+case "${charge_status}" in
+    Full) icon="${icon_full}"; text_long='Full'; text_short='Full';;
+    Charging) icon="${icon_charging}";;
+esac
+
+if [[ ! -t 1 ]] && [[ -n "${icon}" ]]; then
+    icon="<span font_desc='Font Awesome 5 Free'>${icon}</span>"
+fi
+
+printf "%s%s\n%s%s\n%s\n" \
+    "${icon}" "${text_long:+ ${text_long}}" \
+    "${icon}" "${text_short:+ ${text_short}}" \
+    "${color}"
+
+exit

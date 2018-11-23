@@ -1,0 +1,30 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Script that tries to run i3blocks with a specific bottom bar configuration
+# for the host, with a generic fallback relative to it's location.
+
+typeset I3DIR="${${(%):-%x}:A:h:h:h}"
+typeset BOTTOM_BAR="${I3DIR}/i3blocks-bars/i3blocks-bottom.conf"
+
+typeset SHORT_HOST="$(hostname -s)"
+
+if [[ -r "${HOME}/.config/i3/i3blocks-bottom-${SHORT_HOST}.conf" ]]; then
+    BOTTOM_BAR="${HOME}/.config/i3/i3blocks-bottom-${SHORT_HOST}.conf"
+elif [[ -r "${I3DIR}/i3blocks-bars/i3blocks-bottom-${SHORT_HOST}.conf" ]]; then
+    BOTTOM_BAR="${I3DIR}/i3blocks-bars/i3blocks-bottom-${SHORT_HOST}.conf"
+fi
+
+exec i3blocks -c "${BOTTOM_BAR}"
