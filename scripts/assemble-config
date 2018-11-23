@@ -264,9 +264,15 @@ file-block () {
     local line
     local prev_line
     local filepath="${1}"
+
+    local firstline=yes
     commentize <<<"CONTENTS OF '${basefile}' {{{"
     while read -r line; do
         [[ "${line}" != "${COMM_S}vim:"* ]] || continue
+        if [[ "${firstline}" == 'yes' ]]; then
+            [[ -z "${line}" ]] || echo ''
+            firstline=
+        fi
         echo "${line}"
         prev_line="${line}"
     done <"${filepath}"
