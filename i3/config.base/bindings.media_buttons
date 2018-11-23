@@ -1,0 +1,22 @@
+bindsym XF86AudioMute exec --no-startup-id "amixer -D default set Master toggle"
+bindsym XF86AudioLowerVolume exec --no-startup-id "amixer -D default set Master 5%-"
+bindsym XF86AudioRaiseVolume exec --no-startup-id "amixer -D default set Master 5%+"
+bindsym XF86AudioMicMute exec --no-startup-id "amixer -D default set Capture toggle"
+bindsym XF86MonBrightnessDown exec --no-startup-id "xbacklight -dec 10 -steps 1"
+bindsym XF86MonBrightnessUp exec --no-startup-id "xbacklight -inc 10 -steps 1"
+bindsym XF86Display exec --no-startup-id "xbacklight -set 100 -steps 1"
+
+bindsym Shift+XF86AudioMute exec --no-startup-id "amixer -D default set Master 50% mute"
+bindsym Shift+XF86AudioLowerVolume exec --no-startup-id "amixer -D default set Master 15%-"
+bindsym Shift+XF86AudioRaiseVolume exec --no-startup-id "amixer -D default set Master 15%+"
+bindsym Shift+XF86AudioMicMute exec --no-startup-id "amixer -D default set Capture 50% nocap"
+bindsym Shift+XF86MonBrightnessDown exec --no-startup-id "xbacklight -dec 20 -steps 1"
+bindsym Shift+XF86MonBrightnessUp exec --no-startup-id "xbacklight -inc 20 -steps 1"
+bindsym Shift+XF86Display exec --no-startup-id "xbacklight -set 20 -steps 1"
+
+# Media Button left unbound: XF86Tools
+# Media Button left unbound: XF86Search
+# Media Button left unbound: XF86LaunchA
+bindsym XF86Explorer workspace number $w01; exec --no-startup-id "my-sensible-terminal --title localterm -e tm default"
+
+# vim: set ft=i3 foldmethod=marker foldenable:

@@ -1,0 +1,24 @@
+mode "resize" {
+    bindsym  h             resize  grow    left   10  px  or  5   ppt
+    bindsym  j             resize  grow    down   10  px  or  5   ppt
+    bindsym  k             resize  grow    up     10  px  or  5   ppt
+    bindsym  l             resize  grow    right  10  px  or  5   ppt
+    bindsym  Shift+h       resize  shrink  left   10  px  or  5   ppt
+    bindsym  Shift+j       resize  shrink  down   10  px  or  5   ppt
+    bindsym  Shift+k       resize  shrink  up     10  px  or  5   ppt
+    bindsym  Shift+l       resize  shrink  right  10  px  or  5   ppt
+    bindsym  $mod+h        resize  grow    left   30  px  or  15  ppt
+    bindsym  $mod+j        resize  grow    down   30  px  or  15  ppt
+    bindsym  $mod+k        resize  grow    up     30  px  or  15  ppt
+    bindsym  $mod+l        resize  grow    right  30  px  or  15  ppt
+    bindsym  $mod+Shift+h  resize  shrink  left   30  px  or  15  ppt
+    bindsym  $mod+Shift+j  resize  shrink  down   30  px  or  15  ppt
+    bindsym  $mod+Shift+k  resize  shrink  up     30  px  or  15  ppt
+    bindsym  $mod+Shift+l  resize  shrink  right  30  px  or  15  ppt
+    bindsym Ctrl+c mode "default"
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+# vim: set ft=i3 foldmethod=marker foldenable:

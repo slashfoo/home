@@ -1,0 +1,24 @@
+# WINDOW PROPERTIES {{{
+
+for_window [class="Alacritty"] border normal 1
+for_window [class="Arandr"] floating enable
+for_window [class="Pavucontrol"] floating enable
+for_window [class="Remmina"] floating enable
+for_window [class="feh"] floating enable
+for_window [class="keepassxc"] floating enable
+for_window [class="vlc"] floating enable
+for_window [instance="discordapp.com__.*"] floating enable
+for_window [instance="gpick"] floating enable
+for_window [instance="www.audible.com__lib"] floating enable
+for_window [instance="xwinprop"] floating enable
+for_window [title="Authy"] floating enable
+for_window [title="Developer Tools - .*"] floating enable
+for_window [title="Preferences$"] floating enable
+for_window [title="clock"] border pixel 1
+for_window [title="clock"] floating enable
+for_window [title="clock"] sticky enable
+for_window [window_role="task_dialog"] floating enable
+
+# WINDOW PROPERTIES }}}
+
+# vim: set ft=i3 foldmethod=marker foldenable:

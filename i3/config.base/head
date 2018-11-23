@@ -1,0 +1,244 @@
+# AUTO_STARTS {{{
+
+exec_always --no-startup-id "systemctl --user start xresources"
+exec_always --no-startup-id "systemctl --user start backlight-hundred"
+exec_always --no-startup-id "systemctl --user start keyboard-layout"
+
+# AUTO_STARTS }}}
+# LOOKS / DEFAULT BEHAVIOR {{{
+
+set $default-font "pango:Fira Code, Font Awesome 5 Free Bold 12px"
+font $default-font
+workspace_layout default
+focus_follows_mouse yes
+new_window normal 1
+new_float normal 1
+hide_edge_borders both
+
+# "PREFIX"/Mod
+set $mod Mod4
+floating_modifier $mod
+
+# LOOKS / DEFAULT BEHAVIOR }}}
+
+# VARIABLES: WORKSAPCE NAMES {{{
+
+set $w01   "1:  Terms     "
+set $w02   "2:  Browsing  "
+set $w03   "3:  Browsing  "
+set $w04   "4:  Messenger "
+set $w05   "5:  Social    "
+set $w06   "6:  Tasks     "
+set $w07   "7:  Auth      "
+set $w08   "8:  Cal       "
+set $w09   "9:  Chat      "
+set $w10  "10:  email     "
+set $w11  "11:  Video     "
+set $w12  "12:  Music     "
+
+# VARIABLES: WORKSAPCE NAMES }}}
+# VARIABLES: COLORS/THEMING {{{
+
+set $color-highlight        #AAAAAA
+
+# Override in a different file, e.g. config.host.theworkcomputer.color.override
+# set $color-highlight #7CAFC2
+
+set $color-urgent           #BF5D5A
+set $color-bg-dark          #202020
+set $color-bg-medium        #484848
+set $color-bg-light         #828282
+set $color-text-dark        #202020
+set $color-text-medium      #828282
+set $color-text-light       #CFCFCF
+
+#class                   BORDER              BACKGR              TEXT               INDICATOR          CHILD_BORDER
+client.focused           $color-bg-light     $color-highlight    $color-text-dark   $color-highlight   $color-bg-light
+client.focused_inactive  $color-bg-medium    $color-bg-medium    $color-text-light  $color-bg-medium   $color-bg-light
+client.unfocused         $color-bg-medium    $color-bg-medium    $color-text-medium $color-bg-medium   $color-bg-light
+client.urgent            $color-urgent       $color-urgent       $color-text-light  $color-urgent      $color-bg-light
+client.background        $color-bg-dark
+client.placeholder       $color-bg-medium    $color-bg-medium    $color-text-medium $color-bg-medium   $color-bg-light
+
+# VARIABLES: COLORS/THEMING }}}
+
+# BINDINGS: BASE {{{
+
+bindsym $mod+Return exec --no-startup-id "my-sensible-terminal"
+bindsym $mod+Shift+q kill
+bindsym $mod+space exec --no-startup-id "rofi -show drun -modi drun,run,window -sidebar-mode"
+bindsym $mod+Shift+Tab exec --no-startup-id "rofi -show window -modi drun,run,window -sidebar-mode"
+bindsym Ctrl+Mod1+space exec --no-startup-id "ddvorak"
+bindsym Shift+Scroll_Lock exec --no-startup-id "ddvorak"
+
+bindsym $mod+f fullscreen toggle
+bindsym $mod+b border pixel 1
+bindsym $mod+Shift+b border normal 1
+
+bindsym $mod+Shift+r --release restart; mode "default"
+bindsym $mod+Shift+y exec --no-startup-id "i3-exit-gracefully"
+
+# BINDINGS: BASE }}}
+# BINDINGS: LAYOUT {{{
+
+# CHANGE CONTAINER LAYOUT (STACKED, TABBED, TOGGLE SPLIT)
+bindsym $mod+z layout default
+bindsym $mod+t layout tabbed
+bindsym $mod+s layout toggle split
+bindsym $mod+Shift+s layout stacking
+bindsym $mod+minus split vertical
+bindsym $mod+backslash split horizontal
+
+# TILING / FLOATING
+bindsym $mod+Shift+a floating toggle
+bindsym $mod+a focus mode_toggle
+bindsym $mod+d sticky toggle
+
+# BINDINGS: LAYOUT }}}
+# BINDINGS: SCRIPT-AUGMENTED LAYOUT {{{
+
+bindsym $mod+v exec --no-startup-id "i3-pip"
+bindsym $mod+slash exec --no-startup-id "i3-float-nomax"
+bindsym $mod+Shift+slash exec --no-startup-id "i3-float-max"
+
+# BINDINGS: SCRIPT-AUGMENTED LAYOUT }}}
+# BINDINGS: FOCUS + NAVIGATION {{{
+
+# FOCUS THE PARENT/CHILD CONTAINER
+bindsym $mod+semicolon focus parent
+bindsym $mod+comma focus child
+
+# CHANGE FOCUS
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+bindsym $mod+g focus output left
+bindsym $mod+c focus output right
+
+# BINDINGS: FOCUS + NAVIGATION }}}
+# BINDINGS: WORKSPACE NAVIGATION {{{
+
+bindsym $mod+p workspace prev
+bindsym $mod+n workspace next
+bindsym $mod+Shift+p move container to workspace prev; workspace prev
+bindsym $mod+Shift+n move container to workspace next; workspace next
+bindsym $mod+Tab workspace back_and_forth
+
+bindsym $mod+period scratchpad show
+bindsym $mod+Shift+period floating disable, move scratchpad
+
+bindsym  $mod+1           workspace  number $w01
+bindsym  $mod+2           workspace  number $w02
+bindsym  $mod+3           workspace  number $w03
+bindsym  $mod+4           workspace  number $w04
+bindsym  $mod+5           workspace  number $w05
+bindsym  $mod+6           workspace  number $w06
+bindsym  $mod+7           workspace  number $w07
+bindsym  $mod+8           workspace  number $w08
+bindsym  $mod+9           workspace  number $w09
+bindsym  $mod+0           workspace  number $w10
+bindsym  $mod+numbersign  workspace  number $w11
+bindsym  $mod+exclam      workspace  number $w12
+
+# BINDINGS: WORKSPACE NAVIGATION }}}
+# BINDINGS: SCRIPT-AUGMENTED NAVIGATION + MARKS {{{
+
+bindsym $mod+o exec --no-startup-id "i3-gotomark scratch_o"
+bindsym $mod+e exec --no-startup-id "i3-gotomark scratch_e"
+bindsym $mod+u exec --no-startup-id "i3-gotomark scratch_u"
+bindsym $mod+i exec --no-startup-id "i3-gotomark scratch_i"
+
+bindsym $mod+Shift+o mark --toggle scratch_o
+bindsym $mod+Shift+e mark --toggle scratch_e
+bindsym $mod+Shift+u mark --toggle scratch_u
+bindsym $mod+Shift+i mark --toggle scratch_i
+
+bindsym $mod+w exec --no-startup-id i3-scratch-hideall
+bindsym $mod+m exec --no-startup-id i3-input -F 'mark --toggle %s' -l 1 -P 'Mark: '
+bindsym $mod+Shift+m exec --no-startup-id i3-input -F 'mark --toggle %s' -P 'Mark: '
+bindsym $mod+apostrophe exec --no-startup-id i3-input -F "exec --no-startup-id i3-gotomark %s" -l 1 -P 'Go to: '
+bindsym $mod+Shift+apostrophe exec --no-startup-id i3-input -F "exec --no-startup-id i3-gotomark %s" -P 'Go to: '
+
+# BINDINGS: SCRIPT-AUGMENTED NAVIGATION + MARKS }}}
+# BINDINGS: CONTAINER MOVEMENT {{{
+
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+bindsym $mod+Shift+g move workspace to output left
+bindsym $mod+Shift+c move workspace to output right
+
+# BINDINGS: CONTAINER MOVEMENT }}}
+# BINDINGS: CONTAINER WORKSAPCE MOVEMENT {{{
+
+bindsym  $mod+Shift+1           move  container  to  workspace  number $w01
+bindsym  $mod+Shift+2           move  container  to  workspace  number $w02
+bindsym  $mod+Shift+3           move  container  to  workspace  number $w03
+bindsym  $mod+Shift+4           move  container  to  workspace  number $w04
+bindsym  $mod+Shift+5           move  container  to  workspace  number $w05
+bindsym  $mod+Shift+6           move  container  to  workspace  number $w06
+bindsym  $mod+Shift+7           move  container  to  workspace  number $w07
+bindsym  $mod+Shift+8           move  container  to  workspace  number $w08
+bindsym  $mod+Shift+9           move  container  to  workspace  number $w09
+bindsym  $mod+Shift+0           move  container  to  workspace  number $w10
+bindsym  $mod+Shift+numbersign  move  container  to  workspace  number $w11
+bindsym  $mod+Shift+exclam      move  container  to  workspace  number $w12
+
+# BINDINGS: CONTAINER WORKSAPCE MOVEMENT }}}
+# BINDINGS: MISC {{{
+
+bindsym $mod+Shift+dollar exec --no-startup-id i3-input -F 'rename workspace to "%s"' -P 'Rename current desktop: '
+bindsym $mod+dollar exec --no-startup-id i3-input -F "move container to workspace %s" -P 'Move to desktop: '
+
+# }}}
+
+# BARS: TOP {{{
+
+bar {
+    id top
+    position top
+    font $default-font
+    tray_output none
+    binding_mode_indicator no
+    status_command "i3blocks-top-bar"
+    tray_padding 2
+    colors {
+        background          $color-bg-dark
+        separator           $color-bg-dark
+        statusline          $color-text-light
+        # class             BORDER              BACKGR              TEXT
+        focused_workspace   $color-highlight    $color-highlight    $color-text-dark
+        inactive_workspace  $color-bg-medium    $color-bg-medium    $color-text-light
+        urgent_workspace    $color-bg-medium    $color-bg-medium    $color-highlight
+    }
+    mode dock
+}
+
+# BARS: TOP }}}
+# BARS: BOTTOM {{{
+
+bar {
+    id bottom
+    position bottom
+    font $default-font
+    workspace_buttons no
+    tray_output primary
+    binding_mode_indicator yes
+    status_command "i3blocks-bottom-bar"
+    tray_padding 2
+    colors {
+        background          $color-bg-dark
+        separator           $color-bg-dark
+        statusline          $color-text-light
+        # class             BORDER              BACKGR              TEXT
+        urgent_workspace    $color-urgent       $color-urgent       $color-text-light
+    }
+    mode dock
+}
+
+
+# BARS: BOTTOM }}}
+
+# vim: set ft=i3 foldmethod=marker foldenable:
