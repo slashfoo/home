@@ -12,10 +12,4 @@
 " See the License for the specific language governing permissions and
 " limitations under the License.
 
-if !exists("g:ycm_semantic_triggers")
-   let g:ycm_semantic_triggers = {}
-endif
-let g:ycm_semantic_triggers['typescript'] = ['.']
-
-setlocal foldmethod=syntax
-setlocal shiftwidth=2 softtabstop=2 tabstop=2 expandtab
+setlocal iskeyword+=-

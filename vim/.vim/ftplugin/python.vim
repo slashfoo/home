@@ -12,16 +12,7 @@
 " See the License for the specific language governing permissions and
 " limitations under the License.
 
-" Only do this when not done yet for this buffer
-if exists("b:did_ftplugin")
-  finish
-endif
-
-let b:did_ftplugin = 1
 let b:codefmt_formatter = "yapf"
 
-setlocal tabstop=4
-setlocal shiftwidth=4
-setlocal softtabstop=4
-setlocal expandtab
 setlocal commentstring=#\ %s
+setlocal shiftwidth=4 softtabstop=4 tabstop=4 expandtab
