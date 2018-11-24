@@ -768,6 +768,7 @@ nnoremap <Leader>ev :edit $MYVIMRC<CR>
 nnoremap <Leader>ee :call <SID>OpenExtPluginsConfig()<CR>
 nnoremap <Leader>ei :edit $HOME/.config/i3/config<CR>
 nnoremap <Leader>et :edit $HOME/.tmux.conf<CR>
+nnoremap <Leader>ez :edit $HOME/.zshenv<CR>
 
 " Easy buffer resizing
 nnoremap <silent> <Leader><Up> :resize +3<CR>
