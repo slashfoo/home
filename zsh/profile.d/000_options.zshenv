@@ -18,6 +18,7 @@
 # Documentated on `man 1 zshoptions`
 
 setopt auto_continue
+setopt local_options
 setopt numeric_glob_sort
 setopt pipe_fail
 

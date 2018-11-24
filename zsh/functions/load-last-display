@@ -15,9 +15,6 @@
 # Load our last-used display from the ~/.local/last_display file, and
 # re-populate environment and tmux
 
-setopt local_options
-setopt err_return
-
 local LAST_DISPLAY=''
 [[ -r "${HOME}/.local/last_display" ]] && \
     read -r LAST_DISPLAY <"${HOME}/.local/last_display"

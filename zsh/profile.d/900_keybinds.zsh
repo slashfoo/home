@@ -21,7 +21,7 @@ autoload -Uz zkbd
 typeset ZKBD_DIR="${${(%):-%x}:A:h:h}/zkbd"
 
 # expected default file to load with terminal key code definitions
-typeset ZKBD_FILE="${ZKBD_DIR}/${TERM}-${${DISPLAY:t}:-${VENDOR}-${OSTYPE}}"
+typeset ZKBD_FILE="${ZKBD_DIR}/${TERM}-${${${DISPLAY:-}:t}:-${VENDOR}-${OSTYPE}}"
 if [[ "$(uname -v)" == *"Microsoft"* ]]; then
     # override file to load if running on the Windows Subsystem for Linux
     ZKBD_FILE="${ZKBD_DIR}/${TERM}-WSL"

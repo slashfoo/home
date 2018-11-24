@@ -92,3 +92,5 @@ unset fzf_ctrl_r_opts
 unset fzf_ctrl_t_opts
 unset fzf_default_command
 unset fzf_default_opts
+
+typeset fzf_default_completion="${fzf_default_completion:-expand-or-complete}"

@@ -23,8 +23,10 @@ setopt cdable_vars
 setopt complete_in_word
 setopt interactive_comments
 setopt glob_dots
-setopt no_flow_control
-setopt no_pushd_to_home
 setopt path_dirs
 setopt pushd_ignore_dups
 setopt pushd_silent
+
+unsetopt unset
+unsetopt flow_control
+unsetopt pushd_to_home
