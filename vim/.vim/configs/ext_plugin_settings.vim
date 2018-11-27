@@ -422,9 +422,9 @@ function! ext_plugin_settings#set_mappings()
     " }}}
     " fzf {{{
     if exists(':Files')
-        nmap <silent> <leader><tab> <plug>(fzf-maps-n)
-        xmap <silent> <leader><tab> <plug>(fzf-maps-x)
-        omap <silent> <leader><tab> <plug>(fzf-maps-o)
+        nmap <silent> <leader><tab> <Plug>(fzf-maps-n)
+        xmap <silent> <leader><tab> <Plug>(fzf-maps-x)
+        omap <silent> <leader><tab> <Plug>(fzf-maps-o)
         nnoremap <silent> <C-p><C-p> :Files <C-r>=getcwd()<CR><CR>
         nnoremap <silent> <C-p><C-f> :Files <C-r>=expand('%:p:h')<CR><CR>
         nnoremap <silent> <C-p><C-h> :Files <C-r>=expand('~')<CR><CR>
@@ -432,7 +432,7 @@ function! ext_plugin_settings#set_mappings()
         nnoremap <C-p>f :Files <C-r>=expand('%:p:h')<CR>/
         nnoremap <C-p>h :Files <C-r>=expand('~')<CR>/
         nnoremap <silent> <C-n> :Buffers<CR>
-        imap <silent> <C-x><C-w> <plug>(fzf-complete-word)
+        imap <silent> <C-x><C-w> <Plug>(fzf-complete-word)
         inoremap <silent> <F2> <C-C>:History<CR>
         nnoremap <silent> <F2> :History<CR>
         vnoremap <silent> <F2> :<C-u>History<CR>
