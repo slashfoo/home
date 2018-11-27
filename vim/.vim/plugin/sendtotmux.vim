@@ -23,6 +23,21 @@ let s:register = 't'
 " VARIABLES }}}
 " FUNCTIONS: private {{{
 
+function! <SID>GetParagraph() range
+    " Save register
+    let l:register_contents = getreg(s:register)
+    let l:register_type = getregtype(s:register)
+
+    " Get selection through register
+    execute 'silent! normal! vip"' . s:register . 'y'
+
+    let l:selection_text = getreg(s:register)
+
+    " Restore register
+    call setreg(s:register, l:register_contents, l:register_type)
+
+    return l:selection_text
+endfunction
 function! <SID>GetSelection() range
     " Depending on the mode, returns what's been selected. See below.
     "   Mode                What's returned
@@ -40,6 +55,7 @@ function! <SID>GetSelection() range
 
     " Get selection through register
     execute 'silent! normal! gv"' . s:register . 'y'
+
     let l:selection_text = getreg(s:register)
 
     " Restore register
@@ -84,8 +100,7 @@ function! sendtotmux#Paragraph()
     let l:line = line('.')
     let l:col = col('.')
 
-    normal! vip
-    let l:text = <SID>GetSelection()
+    let l:text = <SID>GetParagraph()
 
     " Restore cursor
     call cursor(l:line, l:col)
