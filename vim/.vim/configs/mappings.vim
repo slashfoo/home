@@ -63,5 +63,10 @@ if mapcheck('<plug>(interestingwords#resetwords)') != ''
 
     nnoremap <silent> coy :call interestingwords#toggle_syntax()<CR>
 endif
-
+if mapcheck('<Plug>(sendtotmux#selection)') != ''
+    nmap <silent> <Leader>s <NOP>
+    xmap <Leader>ss <Plug>(sendtotmux#selection)
+    nmap <Leader>ss <Plug>(sendtotmux#line)
+    nmap <Leader>sp <Plug>(sendtotmux#paragraph)
+endif
 " vim: foldmethod=marker foldenable
