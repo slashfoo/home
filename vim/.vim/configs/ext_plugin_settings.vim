@@ -26,7 +26,6 @@ Plug 'ron89/thesaurus_query.vim'
 Plug 'SirVer/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'bronson/vim-visual-star-search'
-Plug 'epeli/slimux'
 Plug 'google/vim-codefmt'
 Plug 'itchyny/lightline.vim'
 Plug 'jiangmiao/auto-pairs'
@@ -278,18 +277,6 @@ function! ext_plugin_settings#set_variables()
     let g:python_highlight_all = 1
     let g:polyglot_disabled = ['markdown', 'go']
     " }}}
-    " slimux {{{
-    if $PREFERRED_TMUX !=# ''
-        let g:slimux_tmux_path = $PREFERRED_TMUX
-    endif
-    let g:slimux_always_use_marked = 1
-    let g:slimux_buffer_filetype = 'cfg'
-    let g:slimux_pane_hint_map = 'dd'
-    let g:slimux_exclude_vim_pane = 0
-    let g:slimux_select_from_current_window = 0
-    let g:slimux_exclude_other_sessions = 0
-    let g:slimux_restore_selection_after_visual = 0
-    " }}}
     " tagbar {{{
     let g:tagbar_autofocus = 1
     let g:tagbar_compact = 1
@@ -454,25 +441,6 @@ function! ext_plugin_settings#set_mappings()
     " indent-guides {{{
     if exists(':IndentGuidesToggle')
         nmap <silent> coi :IndentGuidesToggle<CR>
-    endif
-    " }}}
-    " slimux {{{
-    if exists(':SlimuxREPLConfigure')
-        xmap <silent> <Leader>ss :SlimuxREPLSendSelection<CR>
-        nmap <silent> <Leader>ss :SlimuxREPLSendLine<CR>
-        nmap <silent> <Leader>sp :SlimuxREPLSendParagraph<CR>
-        nmap <silent> <Leader>s <NOP>
-
-        nmap <Leader>sg :SlimuxGlobalConfigure<CR>
-        xmap <Leader>sg :<C-u>SlimuxGlobalConfigure<CR>
-        nmap <Leader>sr :SlimuxREPLConfigure<CR>
-        nmap <Leader>sh :SlimuxShellConfigure<CR>
-        nmap <Leader>sk :SlimuxSendKeysConfigure<CR>
-
-        " F36 is Meta+Enter (Alt+Enter), urxvt is configured to send \033[48~
-        " and this is set in vimrc to mean F36
-        nnoremap <silent> <F36> :update<CR>:SlimuxSendKeys C-j<CR>
-        inoremap <silent> <F36> <C-o>:update<CR><C-o>:SlimuxSendKeys C-j<CR>
     endif
     " }}}
     " tagbar {{{
