@@ -5,22 +5,13 @@ exec_always --no-startup-id "systemctl --user start backlight-hundred"
 exec_always --no-startup-id "systemctl --user start keyboard-layout"
 
 # AUTO_STARTS }}}
-# LOOKS / DEFAULT BEHAVIOR {{{
+
+# VARIABLES: base {{{
 
 set $default-font "pango:Fira Code, Font Awesome 5 Free Bold 12px"
-font $default-font
-workspace_layout default
-focus_follows_mouse yes
-new_window normal 1
-new_float normal 1
-hide_edge_borders both
-
-# "PREFIX"/Mod
 set $mod Mod4
-floating_modifier $mod
 
-# LOOKS / DEFAULT BEHAVIOR }}}
-
+# VARIABLES: base }}}
 # VARIABLES: WORKSAPCE NAMES {{{
 
 set $w01   "1:  Terms     "
@@ -52,6 +43,19 @@ set $color-text-dark        #202020
 set $color-text-medium      #828282
 set $color-text-light       #CFCFCF
 
+# VARIABLES: COLORS/THEMING }}}
+
+# LOOKS / DEFAULT BEHAVIOR {{{
+
+font $default-font
+workspace_layout default
+focus_follows_mouse yes
+new_window normal 1
+new_float normal 1
+hide_edge_borders both
+
+floating_modifier $mod
+
 #class                   BORDER              BACKGR              TEXT               INDICATOR          CHILD_BORDER
 client.focused           $color-bg-light     $color-highlight    $color-text-dark   $color-highlight   $color-bg-light
 client.focused_inactive  $color-bg-medium    $color-bg-medium    $color-text-light  $color-bg-medium   $color-bg-light
@@ -60,7 +64,7 @@ client.urgent            $color-urgent       $color-urgent       $color-text-lig
 client.background        $color-bg-dark
 client.placeholder       $color-bg-medium    $color-bg-medium    $color-text-medium $color-bg-medium   $color-bg-light
 
-# VARIABLES: COLORS/THEMING }}}
+# LOOKS / DEFAULT BEHAVIOR }}}
 
 # BINDINGS: BASE {{{
 
@@ -75,6 +79,7 @@ bindsym $mod+f fullscreen toggle
 bindsym $mod+b border pixel 1
 bindsym $mod+Shift+b border normal 1
 
+bindsym $mod+F1 exec --no-startup-id "x11-default-screen"
 bindsym $mod+Shift+r --release restart; mode "default"
 bindsym $mod+Shift+y exec --no-startup-id "i3-exit-gracefully"
 
