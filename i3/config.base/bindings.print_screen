@@ -1,0 +1,5 @@
+bindsym --release Print exec --no-startup-id "x11-screenshot -v"
+bindsym --release Shift+Print exec --no-startup-id "x11-screenshot -v -s"
+bindsym --release $mod+Print exec --no-startup-id "xset dpms force suspend"
+
+# vim: set ft=i3 foldmethod=marker foldenable:
