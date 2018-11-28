@@ -23,7 +23,7 @@ for funcdir in "${fpath[@]}"; do
     for funcfile in "${funcdir}"/**/*~*.zwc(#q-N.); do
         if ! [[ "${funcfile}.zwc" -nt "${funcfile}" ]]; then
             print "recompiling ${funcfile:t}"
-            zcompile -U "${funcfile}"
+            zcompile -Uz "${funcfile}"
         fi
     done
 done

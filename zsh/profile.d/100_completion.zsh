@@ -30,7 +30,7 @@ for COMPL_FUNC_DIR in "${(aO)USER_FUNC_DIRS[@]}"; do
     fi
     typeset FUNC_FILEPATH
     for FUNC_FILEPATH in "${FUNCS_IN_DIR[@]}"; do
-        zcompile "${FUNC_FILEPATH}"
+        zcompile -Uz "${FUNC_FILEPATH}"
     done
     unset FUNCS_IN_DIR
     unset FUNC_FILEPATH
