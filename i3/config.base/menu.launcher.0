@@ -1,0 +1,4 @@
+set $launch-menu "launcher:"
+mode $launch-menu {
+
+# vim: set ft=i3 foldmethod=marker foldenable:

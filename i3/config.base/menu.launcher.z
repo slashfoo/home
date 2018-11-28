@@ -1,0 +1,11 @@
+    bindsym Shift+r --release restart; mode "default"
+    bindsym Shift+w exec --no-startup-id feh --no-fehbg --bg-fill "${HOME}/.wallpaper"; mode "default"
+    bindsym Shift+x exec --no-startup-id "x11-replace-xdefaults"; mode "default"
+
+    bindsym Ctrl+c mode "default"
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+x mode $launch-menu
+
+# vim: set ft=i3 foldmethod=marker foldenable:
