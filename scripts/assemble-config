@@ -72,22 +72,28 @@ read -r -d '' HELP_MSG <<-EOHELP
 	immediately followed by one of patterns below:
 	    HEADS:
 	        head
+	        head.host.\${TARGET_HOST}
+	        head.user.\${TARGET_USER}
 	        host.\${TARGET_HOST}.head
 	        user.\${TARGET_USER}.head
-	    SPECIFICBODY:
+	    SPECIFIC-PRE:
 	        host.\${TARGET_HOST}.*
 	        user.\${TARGET_USER}.*
-	    GENERICBODY:
+	    GENERIC + SPECIFIC BODY:
 	        *
+	        *.host.\${TARGET_HOST}
+	        *.user.\${TARGET_USER}
 	    TAILS:
 	        tail
+	        tail.host.\${TARGET_HOST}
+	        tail.user.\${TARGET_USER}
 	        host.\${TARGET_HOST}.tail
 	        user.\${TARGET_USER}.tail
 
 	    Files that match PATHPREFIX immediately followed by one of the
 	    patterns/conditions below are discarded:
-	        host.* (when not matching host.\${TARGET_HOST}*)
-	        user.* (when not matching user.\${TARGET_USER}*)
+	        host.* and *.host.* (when not matching host.\${TARGET_HOST}*)
+	        user.* and *.user.* (when not matching user.\${TARGET_USER}*)
 	        *~ (anything terminated in the character '~' is discarded).
 
 	    Where the PATHPREFIX pattern matches paths contained in the base
@@ -414,27 +420,34 @@ for match in "${(@)sorted_raw_matches}"; do
     read -r match_nopre match_path <<<"${match}"
     case "${match_nopre}" in
         host.${TARGET_HOST}.head) ;&
+        head.host.${TARGET_HOST}) ;&
         user.${TARGET_USER}.head) ;&
+        head.user.${TARGET_USER}) ;&
         head)
             head_elems+=( "${match_path}" )
+            ;;
+        host.${TARGET_HOST}.tail) ;&
+        tail.host.${TARGET_HOST}) ;&
+        user.${TARGET_USER}.tail) ;&
+        tail.user.${TARGET_USER}) ;&
+        tail)
+            tail_elems+=( "${match_path}" )
             ;;
         host.${TARGET_HOST}) ;&
         host.${TARGET_HOST}.*) ;&
         user.${TARGET_USER}) ;&
         user.${TARGET_USER}.*)
             specific_body_elems+=( "${match_path}" );;
-        host.*) ;&
-        user.*) ;&
+        *.host.${TARGET_HOST}) ;&
+        *.user.${TARGET_USER})
+            generic_body_elems+=( "${match_path}" );;
+        host.*|*.host.*) ;&
+        user.*|*.user.*) ;&
         *~) ;&
         '')
             debug-msg "Discarding element ${match_path} from matches.";;
         *)
             generic_body_elems+=( "${match_path}" );;
-        host.${TARGET_HOST}.tail) ;&
-        user.${TARGET_USER}.tail) ;&
-        tail)
-            tail_elems+=( "${match_path}" )
-            ;;
     esac
 done
 typeset -a all_matches=(
