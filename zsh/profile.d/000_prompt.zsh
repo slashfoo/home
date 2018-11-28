@@ -25,13 +25,10 @@ theme:color () {
     psvar[1]="${1}"
     psvar[2]="${1}"
     typeset -gx TMUX_COLOR="${1}"
-    THEME_ACTIVE_COLOR="${1}"
 }
 typeset -gx THEME_COLOR
 [[ -n "${THEME_COLOR:-}" ]] || THEME_COLOR=7
-if [[ "${THEME_COLOR}" != "${THEME_ACTIVE_COLOR:-}" ]]; then
-    theme:color "${THEME_COLOR}"
-fi
+theme:color "${THEME_COLOR}"
 
 typeset FANCY_THEME="${FANCY_TERM-}"
 if [[ "${terminfo[colors]:-0}" -ge 256 ]] && [[ -z "${FANCY_THEME:-}" ]]; then
