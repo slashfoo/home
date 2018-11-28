@@ -1187,8 +1187,8 @@ augroup end
 
 " CLIPBOARD (COPYING/PASTING) {{{
 
-if executable('clip.exe')
-    if has('nvim')
+if has('nvim')
+    if executable('clip.exe')
         let g:clipboard = {
             \   'name': 'WindowsClipboard',
             \   'copy': {
@@ -1201,38 +1201,7 @@ if executable('clip.exe')
             \   },
             \   'cache_enabled': 1,
             \ }
-    else
-        augroup vimrc_clipboard
-            autocmd!
-            autocmd TextYankPost *
-                    \ silent! call system('clip.exe', v:event["regcontents"])
-        augroup end
-    endif
-elseif $DISPLAY != '' && executable('xclip')
-    if has('nvim')
-        let g:clipboard = {
-            \   'name': 'X11-clipboard',
-            \   'copy': {
-            \      '+': 'xclip -in -selection clipboard',
-            \      '*': 'xclip -in -selection clipboard',
-            \    },
-            \   'paste': {
-            \      '+': 'xclip -out -selection clipboard',
-            \      '*': 'xclip -out -selection clipboard',
-            \   },
-            \   'cache_enabled': 1,
-            \ }
-    else
-        augroup vimrc_clipboard
-            autocmd!
-            autocmd TextYankPost *
-                    \ silent! call system(
-                    \   'xclip -in -selection clipboard',
-                    \   v:event["regcontents"])
-        augroup end
-    endif
-elseif $DISPLAY == '' && executable('clipper') && executable('clipper-in')
-    if has('nvim')
+    elseif $DISPLAY == '' && executable('clipper') && executable('clipper-in')
         let g:clipboard = {
             \   'name': 'X11-clipboard',
             \   'copy': {
@@ -1245,28 +1214,23 @@ elseif $DISPLAY == '' && executable('clipper') && executable('clipper-in')
             \   },
             \   'cache_enabled': 1,
             \ }
-    else
+    endif
+else
+    if executable('clip.exe')
         augroup vimrc_clipboard
             autocmd!
             autocmd TextYankPost *
-                    \ silent! call system('clipper-in', v:event["regcontents"])
+                        \ silent! call system('clip.exe',
+                        \ v:event["regcontents"])
         augroup end
-    endif
-elseif $TMUX != ''
-    if has('nvim')
-        let g:clipboard = {
-            \   'name': 'TMUX-clipboard',
-            \   'copy': {
-            \      '+': 'tmux load-buffer -',
-            \      '*': 'tmux load-buffer -',
-            \    },
-            \   'paste': {
-            \      '+': 'tmux save-buffer -',
-            \      '*': 'tmux save-buffer -',
-            \   },
-            \   'cache_enabled': 1,
-            \ }
-    else
+    elseif $DISPLAY == '' && executable('clipper') && executable('clipper-in')
+        augroup vimrc_clipboard
+            autocmd!
+            autocmd TextYankPost *
+                        \ silent! call system('clipper-in',
+                        \ v:event["regcontents"])
+        augroup end
+    elseif $TMUX != ''
         augroup vimrc_clipboard
             autocmd!
             autocmd TextYankPost *
@@ -1274,11 +1238,6 @@ elseif $TMUX != ''
                     \   'tmux load-buffer -', v:event['regcontents'])
         augroup end
     endif
-else
-    let g:clipboard = {}
-    augroup vimrc_clipboard
-        autocmd!
-    augroup end
 endif
 
 " }}}
