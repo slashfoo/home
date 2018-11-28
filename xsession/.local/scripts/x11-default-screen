@@ -1,0 +1,78 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+setopt pipe_fail
+unsetopt unset
+
+typeset -gx DISPLAY="${DISPLAY:-:0}"
+typeset XRANDR_OUTPUT="$(xrandr --current --display "${DISPLAY}" 2>&1)"
+
+typeset -a connected_displays=()
+typeset -a disconnected_displays=()
+typeset default_display=''
+
+() {
+    local desired_status="${1:-all}"
+    while read -r display_name display_status; do
+        [[ "${display_name}" != 'Screen' ]] || continue
+        if [[ "${display_status}" == 'connected' ]]; then
+            connected_displays+=( "${display_name}" )
+            continue
+        fi
+        disconnected_displays+=( "${display_name}" )
+    done < <( echo "${XRANDR_OUTPUT}" | grep '^[a-zA-Z]' | cut -f1,2 -d' ' )
+}
+
+get-res-and-rate () {
+    local display_name="${1}"
+    awk -F'[ \t*+]+' '
+        /^[^ \t]/ {
+            display = $1
+            next
+        }
+
+        display == "'${display_name}'" {
+            print $2, $3
+            exit
+        }
+    ' <<<"${XRANDR_OUTPUT}"
+}
+
+default_display="${connected_displays[1]}"
+connected_displays=( "${(@)connected_displays:#${default_display}}" )
+
+typeset resolution refresh_rate
+read -r resolution refresh_rate < <(
+    get-res-and-rate "${default_display}"
+)
+
+typeset -a cmd_line=(
+    xrandr --verbose --screen 0 --display "${DISPLAY}" --dpi 96.0
+)
+
+cmd_line+=(
+    --output "${default_display}" --primary
+    --mode "${resolution}" --rate "${refresh_rate}" --pos '0x0'
+)
+
+for display_name in ${(@)connected_displays} ${(@)disconnected_displays}; do
+    cmd_line+=( --output "${display_name}" --off )
+done
+
+echo "${(@)cmd_line}"
+"${(@)cmd_line}" &
+feh --no-fehbg --bg-fill "${HOME}/.wallpaper" &
+volume-defaults &
+wait
