@@ -153,4 +153,11 @@ URxvt.keysym.Control-Tab:       \033[50~
 Xcursor.theme:                  DMZ-Black
 Xcursor.size:                   32
 
+! XTerm stuff
+xterm*faceName: Fira Code
+xterm*faceSize: 13
+xterm*loginshell: true
+xterm*ScrollBar: false
+xterm*scrollTtyOutput: false
+
 ! vim: ft=xdefaults:commentstring=!\ %s:cc+=33
