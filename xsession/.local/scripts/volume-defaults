@@ -14,6 +14,7 @@
 # limitations under the License.
 
 set -eu -o pipefail
+set -x
 
 typeset SHORT_HOST="$(hostname -s)"
 typeset SINK="$(
