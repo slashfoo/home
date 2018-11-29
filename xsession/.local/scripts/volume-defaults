@@ -14,15 +14,17 @@
 # limitations under the License.
 
 set -eu -o pipefail
-set -x
 
-typeset SHORT_HOST="$(hostname -s)"
 typeset SINK="$(
     pacmd list-sinks | \
         grep 'alsa_output\.pci-.*\.analog-stereo' | \
         sed -e 's/^.*<\(.*\)\>.*$/\1/'
 )"
-typeset SOURCE="${SINX}"
+typeset SOURCE="$(
+    pacmd list-sources | \
+        grep 'alsa_input\.pci-.*\.analog-stereo' | \
+        sed -e 's/^.*<\(.*\)\>.*$/\1/'
+)"
 
 [[ -n "${SINK:-}" ]] || SINK='@DEFAULT_SINK@'
 [[ -n "${SOURCE:-}" ]] || SINK='@DEFAULT_SOURCE@'

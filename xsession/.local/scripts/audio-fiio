@@ -24,7 +24,7 @@ if pacmd list-sinks | \
             sed -e 's/^.*<\(.*\)\>.*$/\1/'
     )"
 fi
-if [[ -z "${SINK}" ]] || [[ "${1:-}" == "-x" ]]; then
+if [[ -z "${SINK:-}" ]] || [[ "${1:-}" == "-x" ]]; then
     SINK="$(
         pacmd list-sinks | \
             grep 'alsa_output.pci-' | \
