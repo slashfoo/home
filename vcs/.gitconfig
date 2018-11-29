@@ -90,7 +90,7 @@
     assume   = update-index --assume-unchanged
     unassume = update-index --no-assume-unchanged
     assumed  = "!git ls-files -v | grep ^h | cut -c 3-"
-    snapshot = !git stash push --message="snapshot:$(date +'%Y-%m-%dT%H:%M:%S.%3N%:z')" && git stash apply --index --quiet "stash@{0}"
+    snapshot = !git stash save --keep-index "snapshot:$(date +'%Y-%m-%dT%H:%M:%S.%3N%:z')" && git stash apply --index --quiet "stash@{0}"
     snap = !git snapshot
     exec = "!exec "
 [tag]
