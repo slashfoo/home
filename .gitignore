@@ -1,4 +1,6 @@
+*\.zwc
 \.netrwhist
+__pycache__
 _ext_plugin
 _nviminfo
 _undos
@@ -10,4 +12,3 @@ es\.utf-8\.spl
 es\.utf-8\.sug
 local-dictionary\.utf-8\.add
 mthesaur\.txt
-*\.zwc
