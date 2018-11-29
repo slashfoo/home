@@ -42,10 +42,10 @@ URxvt.iso14755_52:              false
 
 ! Fonts
 URxvt.allow_bold:               true
-URxvt.font:                     xft:Fira Code:pixelsize=19:autohint=true
-URxvt.boldFont:                 xft:Fira Code:Bold:pixelsize=19:autohint=true
-URxvt.italicFont:               xft:Fira Code:Italic:pixelsize=19:autohint=true
-URxvt.boldItalicFont:           xft:Fira Code:Bold:Italic:pixelsize=19:autohint=true
+URxvt.font:                     xft:Fira Code:pixelsize=18:autohint=true
+URxvt.boldFont:                 xft:Fira Code:Bold:pixelsize=18:autohint=true
+URxvt.italicFont:               xft:Fira Code:Italic:pixelsize=18:autohint=true
+URxvt.boldItalicFont:           xft:Fira Code:Bold:Italic:pixelsize=18:autohint=true
 
 ! Fix font space, set to negative to compress letter spacing horizontally
 URxvt.letterSpace:              -1
