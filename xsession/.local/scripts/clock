@@ -1,0 +1,244 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Open a very un-fancy window with a clock for x
+
+setopt no_unset
+setopt pipe_fail
+
+typeset VERBOSE="${VERBOSE:-}"
+
+case "${VERBOSE}" in
+    0) ;& [Nn]{,[Oo]}) ;& [Ff]{,[Aa][Ll][Ss][Ee]) ;& '')
+        VERBOSE='no';;
+    *)
+        VERBOSE='yes';;
+esac
+
+if [[ "${VERBOSE}" == 'yes' ]]; then
+    setopt xtrace
+fi
+
+typeset FONT='DejaVu Sans Mono'
+typeset FONT_SIZE=12
+typeset TIMESTAMP_FMT="%D{%Y-%m-%dT%H:%M:%S.%6.%z}"
+typeset FORCE='no'
+typeset RUN_WINDOW='no'
+typeset COLOR_NUM=7
+typeset DO_ATTACH='yes'
+
+unsetopt err_exit err_return
+typeset SCRIPT_PATH="${${(%):-%x}:A}"
+typeset SCRIPT_NAME="${SCRIPT_PATH:t}"
+typeset USAGE_MSG
+typeset HELP_MSG
+read -r -d '' USAGE_MSG <<-EOUSAGE
+	Usage:	${SCRIPT_NAME} [-c COLOR_NUM] [-f] [-n] [-x] [-v]
+	      	${SCRIPT_NAME} -h
+EOUSAGE
+
+read -r -d '' HELP_MSG <<-EOHELP
+	Open a very un-fancy window with a clock for x.
+
+	Uses:
+	    term_prg='urxvt'
+	    font='${FONT}'
+	    font_size=${FONT_SIZE}
+
+	Options:
+	      	-c COLOR_NUM 	Number of the color for the clock text
+	      	-f           	Force attach, even if already inside tmux.
+	      	-n           	Only change color of the clock, don't run window or
+	      	             	attach to tmux session.
+	      	-x           	Start a terminal with this command running in it.
+	      	-h           	Show this message and exit.
+	      	-v           	Show messages detailing steps of the execution.
+EOHELP
+setopt err_exit err_return
+
+error-msg () {
+    {
+        setopt local_options
+        unsetopt xtrace
+    } >/dev/null 2>&1
+    echo -n "Error: " >&2
+    echo "${@}" >&2
+    echo '' >&2
+    print-usage
+    exit 1
+}
+
+debug-msg () {
+    {
+        setopt local_options
+        unsetopt xtrace
+    } >/dev/null 2>&1
+    if [[ "${#}" -eq 0 ]] || [[ "${VERBOSE}" != 'yes' ]]; then
+        return
+    fi
+    echo -n "> ${(%):-${TIMESTAMP_FMT}} | " >&2
+    echo "${@}" >&2
+}
+
+debug-cat () {
+    {
+        setopt local_options
+        unsetopt xtrace
+    } >/dev/null 2>&1
+    if [[ "${VERBOSE}" != 'yes' ]]; then
+        return
+    fi
+    local IFS=''
+    if [[ ! -t 0 ]]; then
+        local line
+        while read -r line; do
+            debug-msg "${line}"
+        done
+    fi
+    while [[ "${#}" -gt 0 ]]; do
+        local filename="${1:-}"; shift
+        if [[ ! -s "${filename}" ]]; then
+            debug-msg "File ${filename:a} does not exist, or is blank."
+            continue
+        fi
+        local line
+        debug-msg "BEGINNING OF CONTENTS OF ${filename:a}"
+        while read -r line; do
+            debug-msg "${line}"
+        done < <(nl -ba -w6 -nrn "${filename}")
+        debug-msg "      END OF CONTENTS OF ${filename:a}"
+    done
+}
+
+print-usage () {
+    {
+        setopt local_options
+        unsetopt xtrace
+    } >/dev/null 2>&1
+    echo "${USAGE_MSG}" >&2
+}
+
+print-help () {
+    {
+        setopt local_options
+        unsetopt xtrace
+    } >/dev/null 2>&1
+    local pager="${PAGER:-$(command -v less 2>/dev/null)}"
+    if [[ -z "${pager:-}" ]]; then
+        pager='cat'
+    fi
+    {
+        echo "${USAGE_MSG}"
+        echo ''
+        echo "${HELP_MSG}"
+    } | ${pager}
+}
+
+typeset -i10 OPTIND=0
+while getopts ":hvxc:fn" opt; do
+    case "${opt}" in
+        h)
+            print-help; exit 0;;
+        v)
+            VERBOSE='yes';;
+        x)
+            RUN_WINDOW='yes';;
+        n)
+            DO_ATTACH='no';;
+        f)
+            FORCE='yes';;
+        c)
+            COLOR_NUM="${OPTARG}";;
+        :)
+            error-msg "'-${OPTARG}' requires a parameter";;
+        \?)
+            error-msg "'-${OPTARG}' is not a valid option/argument.";;
+    esac
+done
+shift $(( OPTIND - 1 ))
+unset opt
+unset OPTIND
+unset OPTERR
+unset OPTARG
+
+if [[ ! -o xtrace ]] && [[ "${VERBOSE}" == yes ]]; then
+    setopt xtrace
+fi
+
+if [[ "${#}" -ne 0 ]]; then
+    error-msg "Error: this command does not accept positional arguments."
+    exit 0
+fi
+
+typeset COLOR="colour${COLOR_NUM}"
+[[ -t 0 ]] || RUN_WINDOW='yes'
+
+debug-cat <<-EOMSG
+	Execution parameters:
+	    $(typeset RUN_WINDOW)
+	    $(typeset FORCE)
+	    $(typeset COLOR_NUM)
+	    $(typeset COLOR)
+EOMSG
+
+typeset DO_REFRESH=yes
+if ! tmux has-session -t "=clock" >/dev/null 2>&1; then
+    DO_REFRESH=no
+    TMUX='' tmux new-session \
+        -c "${HOME}" \
+        -s "clock" \
+        -d \
+        -- \
+        bash -c 'read -n 1 -s -r -p "Press any key to exit..."'
+    tmux set-option -t "=clock" set-titles-string "clock"
+    tmux set-option -t "=clock" status
+fi
+tmux set-window-option -t "=clock" clock-mode-style 24
+tmux set-window-option -t "=clock" clock-mode-colour "${COLOR}"
+typeset PANE_ID="$(
+    tmux list-panes -s -t '=clock' -F '#{pane_active}#{window_active}:#D' | \
+        sed -E -n -e 's#^11:(.*)?#\1#p'
+)"
+tmux clock-mode -t "${PANE_ID}"
+
+if [[ "${DO_REFRESH}" == 'yes' ]]; then
+    tmux set-option -t "=clock" status
+    tmux set-option -t "=clock" status
+fi
+
+[[ "${DO_ATTACH}" == 'yes' ]] || exit 0
+
+if [[ "${RUN_WINDOW}" == 'yes' ]]; then
+    typeset -a cmd_line=( "${SCRIPT_PATH}" -c "${COLOR_NUM}" )
+    [[ "${FORCE}" == 'no' ]] || cmd_line+=( -f )
+    urxvt \
+        -geometry 30x6 \
+        -fn "xft:${FONT}:pixelsize=${FONT_SIZE}:autohint=true" \
+        -fb "xft:${FONT}:Bold:pixelsize=${FONT_SIZE}:autohint=true" \
+        -fi "xft:${FONT}:Italic:pixelsize=${FONT_SIZE}:autohint=true" \
+        -fi "xft:${FONT}:Bold:Italic:pixelsize=${FONT_SIZE}:autohint=true" \
+        -bg '[20]#3A3A3A' \
+        -title clock \
+        -b 30 \
+        -cd "${HOME}" \
+        -e "${(@)cmd_line}" \
+        </dev/null >/dev/null 2>&1 &
+    RET_CODE="${?}"
+    disown
+    exit "${RET_CODE}"
+fi
+
+[[ "${FORCE}" == "no" ]] || unset TMUX
+exec tmux attach-session -r -d -t "=clock"
