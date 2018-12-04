@@ -241,4 +241,4 @@ if [[ "${RUN_WINDOW}" == 'yes' ]]; then
 fi
 
 [[ "${FORCE}" == "no" ]] || unset TMUX
-exec tmux attach-session -r -d -t "=clock"
+exec tmux attach-session -r -t "=clock"
