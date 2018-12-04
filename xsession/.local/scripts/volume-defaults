@@ -29,6 +29,9 @@ typeset SOURCE="$(
 [[ -n "${SINK:-}" ]] || SINK='@DEFAULT_SINK@'
 [[ -n "${SOURCE:-}" ]] || SINK='@DEFAULT_SOURCE@'
 
+pacmd set-default-sink "${SINK}"
+pacmd set-default-source "${SOURCE}"
+
 pactl set-sink-port "${SINK}" analog-output-speaker
 pactl set-sink-volume "${SINK}" '50%'
 pactl set-sink-mute "${SINK}" 1
@@ -56,3 +59,7 @@ pacmd list-sources "${SOURCE}" | \
 pacmd list-sink-inputs | \
     awk '$1 == "index:" {print $2}' | \
     xargs -I% -r pacmd move-sink-input % "${SINK}"
+
+pacmd list-source-outputs |
+    awk '$1 == "index:" {print $2}' |
+    xargs -I% -r pacmd move-source-output % "${SOURCE}"
