@@ -25,11 +25,7 @@ if pacmd list-sinks | \
     )"
 fi
 if [[ -z "${SINK:-}" ]] || [[ "${1:-}" == "-x" ]]; then
-    SINK="$(
-        pacmd list-sinks | \
-            grep 'alsa_output.pci-' | \
-            sed -e 's/^.*<\(.*\)\>.*$/\1/'
-    )"
+    exec volume-defaults
 fi
 
 pacmd set-default-sink "${SINK}"
