@@ -23,13 +23,14 @@ if pacmd list-sinks | \
             grep 'alsa_output.usb-GN_Netcom_A_S_Jabra_EVOLVE_LINK' | \
             sed -e 's/^.*<\(.*\)\>.*$/\1/'
     )"
-fi
-if [[ -z "${SINK:-}" ]] || [[ "${1:-}" == "-x" ]]; then
-    SINK="$(
-        pacmd list-sinks | \
-            grep 'alsa_output.pci-' | \
+    SOURCE="$(
+        pacmd list-sources | \
+            grep 'alsa_input.usb-GN_Netcom_A_S_Jabra_EVOLVE_LINK' | \
             sed -e 's/^.*<\(.*\)\>.*$/\1/'
     )"
+fi
+if [[ -z "${SINK:-}" ]] || [[ "${1:-}" == "-x" ]]; then
+    exec volume-defaults
 fi
 
 pacmd set-default-sink "${SINK}"
@@ -37,3 +38,9 @@ pactl set-sink-volume "${SINK}" '50%'
 pacmd list-sink-inputs | \
     awk '$1 == "index:" {print $2}' | \
     xargs -I% -r pacmd move-sink-input % "${SINK}"
+
+pacmd set-default-source "${SOURCE}"
+pactl set-source-volume "${SOURCE}" '50%'
+pacmd list-source-outputs |
+    awk '$1 == "index:" {print $2}' |
+    xargs -I% -r pacmd move-source-output % "${SOURCE}"
