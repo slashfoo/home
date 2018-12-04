@@ -45,7 +45,7 @@ printf "%s\n" "${addr}"
 
 case "${BLOCK_BUTTON:-}" in
     1|2|3)
-        echo "${addr}" | xclip -in -selection clipboard;
+        echo "${addr}" | xclip -in -selection clipboard >/dev/null 2>&1;
         notify-send 'Copied address to clipboard'
         ;;
 esac
