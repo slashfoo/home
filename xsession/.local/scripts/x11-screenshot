@@ -40,6 +40,8 @@ command -v slop >/dev/null 2>&1 || exit
 typeset TIMESTAMP_FMT='%D{%Y-%m-%dT%H:%M:%S.%6.}'
 
 typeset FILE_TIMESTAMP_FMT='%D{%Y-%m-%dT%H%M%S.%3.}'
+typeset FORMAT=''
+typeset QUALITY=1
 typeset DEST_DIR="${HOME}/Pictures"
 typeset FILEPATH=''
 typeset FORCE='no'
@@ -88,6 +90,11 @@ read -r -d '' HELP_MSG <<-EOHELP
 	      	             	filepath is not specified.
 	      	             	Defaults to: "${DEST_DIR}"
 	      	-f           	Write screenshot even if the file already exists.
+	      	-j           	Take screenshot as jpg instead of png when not
+	      	             	providing a FILEPATH. If not provided, the file's
+	      	             	extension is assumed when it is one of the values
+	      	             	{png,jpg,jpeg}. If provided along with a FILEPATH
+	      	             	the extension is ignored.
 	      	-s           	Allow selection of region/window for a partial
 	      	             	screenshot.
 	      	-u UPLOAD_URL	URL to use when uploading the screenshot.
@@ -189,7 +196,7 @@ typeset -a ARGUMENTS=()
 while [[ "${#}" -gt 0 ]]; do
 
     typeset -i10 OPTIND=0
-    while getopts ":vxhd:fu:s" opt; do
+    while getopts ":vxhd:fju:s" opt; do
         case "${opt}" in
             h)
                 print-help; exit 0;;
@@ -201,6 +208,8 @@ while [[ "${#}" -gt 0 ]]; do
                 DEST_DIR="${OPTARG}"; DO_RUN='yes';;
             f)
                 FORCE='yes'; DO_RUN='yes';;
+            j)
+                FORMAT='jpg'; DO_RUN='yes';;
             s)
                 WHOLE_SCREEN='no'; DO_RUN='yes';;
             u)
@@ -222,7 +231,12 @@ unset OPTIND
 unset OPTERR
 unset OPTARG
 
-if [[ "${#}" -eq 0 ]] && [[ "${DO_RUN}" != 'yes' ]]; then
+if [[ "${#}" -gt 0 ]]; then
+    ARGUMENTS+=( "${@}" )
+    shift "${#}"
+fi
+
+if [[ "${#ARGUMENTS[@]}" -eq 0 ]] && [[ "${DO_RUN}" != 'yes' ]]; then
     print-usage
     exit 0
 fi
@@ -232,11 +246,25 @@ if [[ "${#ARGUMENTS[@]}" -gt 1 ]]; then
 fi
 
 FILEPATH="${ARGUMENTS[1]:-}"
+FORMAT="${FORMAT:-png}"
 if [[ -z "${FILEPATH}" ]]; then
-    FILEPATH="${DEST_DIR}/${(%)FILE_TIMESTAMP_FMT}_screenshot.png"
+    FILEPATH="${DEST_DIR}/${(%)FILE_TIMESTAMP_FMT}_screenshot.${FORMAT}"
 else
     FILEPATH="${FILEPATH:a}"
     DEST_DIR="${FILEPATH:h}"
+    if [[ -z "${FORMAT}" ]]; then
+        case "${FILEPATH:e}" in
+            [jJ][pP][gG]) ;&
+            [jJ][pP][eE][gG])
+                FORMAT='jpg';;
+            *)
+                FORMAT='png';;
+        esac
+    fi
+fi
+
+if [[ "${FORMAT}" == 'jpg' ]]; then
+    QUALITY=9
 fi
 
 typeset -a maim_cmd=( "${${:-maim}:c}" )
@@ -244,8 +272,8 @@ if [[ "${WHOLE_SCREEN}" == 'no' ]]; then
     maim_cmd+=( --select --hidecursor )
 fi
 maim_cmd+=(
-    --quality=10
-    --noopengl
+    --format="${FORMAT}"
+    --quality="${QUALITY}"
     --delay=0.1
     --quiet
     --tolerance=10
@@ -290,8 +318,8 @@ if [[ -n "${UPLOAD_URL}" ]]; then
         error-msg "Failed to upload screenshot to provided url"
     fi
     debug-msg "Screenshot uploaded and now located at ${SCRNSHT_URL}"
-    xclip -in -selection clipboard <<<"${SCRNSHT_URL}" || :
+    xclip -in -selection clipboard <<<"${SCRNSHT_URL}" >/dev/null 2>&1 || :
 else
-    xclip -in -selection clipboard <<<"${FILEPATH}" || :
+    xclip -in -selection clipboard <<<"${FILEPATH}" >/dev/null 2>&1 || :
 fi
 notify-send --urgency=normal --expire-time=1500 "Screenshot captured"
