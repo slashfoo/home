@@ -72,7 +72,4 @@ for display_name in ${(@)connected_displays} ${(@)disconnected_displays}; do
 done
 
 echo "${(@)cmd_line}"
-"${(@)cmd_line}" &
-feh --no-fehbg --bg-fill "${HOME}/.wallpaper" &
-volume-defaults &
-wait
+exec "${(@)cmd_line}"

@@ -34,4 +34,5 @@ for display_name in ${(@)displays}; do
     cmd_line+=( --output "${display_name}" --off )
 done
 
+echo "${(@)cmd_line}"
 exec "${(@)cmd_line}"
