@@ -60,6 +60,14 @@ pacmd list-sink-inputs | \
     awk '$1 == "index:" {print $2}' | \
     xargs -I% -r pacmd move-sink-input % "${SINK}"
 
+pacmd list-sink-inputs | \
+    awk '$1 == "index:" {print $2}' | \
+    xargs -I'{}' -r pactl set-sink-input-volume "{}" '100%'
+
 pacmd list-source-outputs |
     awk '$1 == "index:" {print $2}' |
     xargs -I% -r pacmd move-source-output % "${SOURCE}"
+
+pacmd list-source-outputs | \
+    awk '$1 == "index:" {print $2}' | \
+    xargs -I'{}' -r pactl set-source-output-volume "{}" '100%'
