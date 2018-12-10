@@ -19,6 +19,7 @@
 
 setopt auto_continue
 setopt local_options
+setopt local_traps
 setopt numeric_glob_sort
 setopt pipe_fail
 
