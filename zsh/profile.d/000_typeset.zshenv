@@ -38,11 +38,32 @@ typeset -gxU WATCH watch
 # behavior as above for automatically updating a string of joined values from
 # an array automatically, the last parameter ':' (colon) or ' ' (space) is the
 # separator. For more information see typeset in `man 1 zshbuiltins`
+typeset -gxTU HOME_REPOS="${HOME_REPOS:-}" home_repos ':'
 typeset -gxTU LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}" ld_library_path ':'
 typeset -gxTU PKG_CONFIG_PATH="${PKG_CONFIG_PATH:-}" pkg_config_path ':'
 typeset -gxTU LDFLAGS="${LDFLAGS:-}" ldflags ' '
 typeset -gxTU CFLAGS="${CFLAGS:-}" cflags ' '
 typeset -gxTU CPPFLAGS="${CPPFLAGS:-}" cppflags ' '
+
+# Remove blank entries from array variables
+home_repos=( ${(@)home_repos:#} )
+ld_library_path=( ${(@)ld_library_path:#} )
+pkg_config_path=( ${(@)pkg_config_path:#} )
+ldflags=( ${(@)ldflags:#} )
+cflags=( ${(@)cflags:#} )
+cppflags=( ${(@)cppflags:#} )
+
+# If not already in the array, add the current "repo" to the home_repos,
+# assuming that this file is contained in a home_repo if that directory
+# contains a .git sub-directory
+() {
+    local this_dir="${${(%):-%x}:A:h}"
+    local this_repo="${this_dir:h:h}"
+    [[ -d "${this_repo}/.git" ]] || return
+    [[ "${home_repos[(i)${this_repo}]}" -ge "${#home_repos}" ]] || return
+    home_repos+=( "${this_repo}" )
+}
+
 
 # suffixes to be ignored by filename completion
 # Documented in `man 1 zshparam`
