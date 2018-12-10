@@ -1,0 +1,58 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Applies the ddvorak.leopold layout to the leopold devices only
+
+setopt no_unset
+setopt pipe_fail
+
+if [[ -z "${DISPLAY:-}" ]]; then
+    echo "Error: Blank DISPLAY environment variable" >&2
+    exit 1
+fi
+
+typeset ABS_SCRIPT_DIR="${${(%):-%x}:A:h}"
+typeset XKB_DIR="${ABS_SCRIPT_DIR:h:h}"
+typeset -i10 RETURN_CODE
+
+
+typeset -a DEVICES=( $(
+    xinput list --short | \
+        sed -E -n \
+            -e 's/^[^a-zA-Z]+//' \
+            -e '/Cypress USB.*keyboard/s/^.*id\=([0-9]+).*$/\1/p' \
+        | \
+        sort -n
+) )
+
+RETURN_CODE=0
+for device in "${(@)DEVICES}"; do
+    () {
+        local -i10 xkb_call=0
+        xkbcomp -a -w0 -I"${XKB_DIR}"  -R"${XKB_DIR}" -i "${device}" -synch \
+            keymap/ddvorak.leopold "${DISPLAY}"
+        xkb_call="${0}"
+        [[ "${RETURN_CODE}" -ne 0 ]] || RETURN_CODE="${xkb_call}"
+    }
+done
+
+if [[ "${RETURN_CODE}" -eq 0 ]]; then
+    MSG="Successfully applied ddvorak(leopold) layout"
+else
+    MSG="Failed to apply Keyboard layout"
+fi
+! command -v notify-send >/dev/null 2>&1 || notify-send "${MSG}"
+echo "${MSG}" >&2
+exit "${RETURN_CODE}"
