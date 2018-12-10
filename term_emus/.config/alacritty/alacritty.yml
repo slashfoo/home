@@ -22,7 +22,7 @@ env:
   COLORTERM: truecolor
 
 window:
-  decorations: false
+  decorations: none
   dimensions:
     columns: 91
     lines: 30
@@ -30,6 +30,15 @@ window:
   padding:
     x: 2
     y: 2
+
+  start_maximized: false
+  dynamic_padding: true
+
+scrolling:
+  history: 100000
+  multiplier: 3
+  faux_multiplier: 3
+  auto_scroll: false
 
 dpi:
   x: 96.0
@@ -44,15 +53,17 @@ mouse_bindings:
   - { mouse: Middle, action: PasteSelection }
 
 mouse:
+  hide_when_typing: false
   double_click: { threshold: 200 }
   triple_click: { threshold: 200 }
 
 selection:
   semantic_escape_chars: ",│`|:\"' ()[]{}<>"
 
-hide_cursor_when_typing: false
 live_config_reload: true
-unfocused_hollow_cursor: true
+
+cursor:
+  unfocused_follow: true
 
 font:
   normal:
@@ -80,8 +91,6 @@ font:
   use_thin_strokes: true
 
 render_timer: false
-
-custom_cursor_colors: true
 
 # Colors
 colors:
