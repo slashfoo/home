@@ -22,6 +22,10 @@ xinput set-prop \
     'libinput Accel Speed' -0.35
 
 xinput set-prop \
+    pointer:'Logitech MX Ergo' \
+    'libinput Natural Scrolling Enabled' 1
+
+xinput set-prop \
     pointer:'Clearly Superior Technologies. CST Laser Trackball' \
     'libinput Natural Scrolling Enabled' 1
 
