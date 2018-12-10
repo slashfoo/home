@@ -1,0 +1,12 @@
+[Unit]
+Description=Solaar - Logitech Unifying receiver manager
+Documentation=https://pwr.github.io/Solaar/
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/solaar --debug
+Restart=on-failure
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=xsession.target
