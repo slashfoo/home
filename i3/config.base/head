@@ -1,7 +1,7 @@
 # AUTO_STARTS {{{
 
 exec_always --no-startup-id "systemctl --user start xresources"
-exec_always --no-startup-id "systemctl --user start backlight-hundred"
+exec_always --no-startup-id "systemctl --user start backlight-max"
 exec_always --no-startup-id "systemctl --user start keyboard-layout"
 
 # AUTO_STARTS }}}
