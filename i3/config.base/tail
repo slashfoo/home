@@ -4,6 +4,7 @@ for_window [class="Alacritty"] border normal 1
 for_window [class="Arandr"] floating enable
 for_window [class="Pavucontrol"] floating enable
 for_window [class="Remmina"] floating enable
+for_window [class="Solaar"] floating enable
 for_window [class="feh"] floating enable
 for_window [class="keepassxc"] floating enable
 for_window [class="vlc"] floating enable

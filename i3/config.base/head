@@ -50,9 +50,12 @@ set $color-text-light       #CFCFCF
 font $default-font
 workspace_layout default
 focus_follows_mouse yes
+focus_on_window_activation smart
+focus_wrapping no
 new_window normal 1
 new_float normal 1
 hide_edge_borders both
+workspace_auto_back_and_forth yes
 
 floating_modifier $mod
 
@@ -208,6 +211,8 @@ bar {
     tray_output none
     binding_mode_indicator no
     status_command "i3blocks-top-bar"
+    bindsym button4 nop
+    bindsym button5 nop
     tray_padding 2
     colors {
         background          $color-bg-dark
