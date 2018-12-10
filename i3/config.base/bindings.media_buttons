@@ -17,6 +17,6 @@ bindsym Shift+XF86Display exec --no-startup-id "xbacklight -set 20 -steps 1"
 bindsym XF86Tools exec --no-startup-id "x11-default-screen"
 # Media Button left unbound: XF86Search
 # Media Button left unbound: XF86LaunchA
-bindsym XF86Explorer workspace number $w01; exec --no-startup-id "my-sensible-terminal --title localterm -e tm default"
+bindsym XF86Explorer workspace --no-auto-back-and-forth number $w01; exec --no-startup-id "my-sensible-terminal --title localterm -e tm default"
 
 # vim: set ft=i3 foldmethod=marker foldenable:

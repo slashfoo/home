@@ -181,24 +181,24 @@ bindsym $mod+Shift+c move workspace to output right
 # BINDINGS: CONTAINER MOVEMENT }}}
 # BINDINGS: CONTAINER WORKSAPCE MOVEMENT {{{
 
-bindsym  $mod+Shift+1           move  container  to  workspace  number $w01
-bindsym  $mod+Shift+2           move  container  to  workspace  number $w02
-bindsym  $mod+Shift+3           move  container  to  workspace  number $w03
-bindsym  $mod+Shift+4           move  container  to  workspace  number $w04
-bindsym  $mod+Shift+5           move  container  to  workspace  number $w05
-bindsym  $mod+Shift+6           move  container  to  workspace  number $w06
-bindsym  $mod+Shift+7           move  container  to  workspace  number $w07
-bindsym  $mod+Shift+8           move  container  to  workspace  number $w08
-bindsym  $mod+Shift+9           move  container  to  workspace  number $w09
-bindsym  $mod+Shift+0           move  container  to  workspace  number $w10
-bindsym  $mod+Shift+numbersign  move  container  to  workspace  number $w11
-bindsym  $mod+Shift+exclam      move  container  to  workspace  number $w12
+bindsym  $mod+Shift+1           move --no-auto-back-and-forth container  to  workspace  number $w01
+bindsym  $mod+Shift+2           move --no-auto-back-and-forth container  to  workspace  number $w02
+bindsym  $mod+Shift+3           move --no-auto-back-and-forth container  to  workspace  number $w03
+bindsym  $mod+Shift+4           move --no-auto-back-and-forth container  to  workspace  number $w04
+bindsym  $mod+Shift+5           move --no-auto-back-and-forth container  to  workspace  number $w05
+bindsym  $mod+Shift+6           move --no-auto-back-and-forth container  to  workspace  number $w06
+bindsym  $mod+Shift+7           move --no-auto-back-and-forth container  to  workspace  number $w07
+bindsym  $mod+Shift+8           move --no-auto-back-and-forth container  to  workspace  number $w08
+bindsym  $mod+Shift+9           move --no-auto-back-and-forth container  to  workspace  number $w09
+bindsym  $mod+Shift+0           move --no-auto-back-and-forth container  to  workspace  number $w10
+bindsym  $mod+Shift+numbersign  move --no-auto-back-and-forth container  to  workspace  number $w11
+bindsym  $mod+Shift+exclam      move --no-auto-back-and-forth container  to  workspace  number $w12
 
 # BINDINGS: CONTAINER WORKSAPCE MOVEMENT }}}
 # BINDINGS: MISC {{{
 
 bindsym $mod+Shift+dollar exec --no-startup-id i3-input -F 'rename workspace to "%s"' -P 'Rename current desktop: '
-bindsym $mod+dollar exec --no-startup-id i3-input -F "move container to workspace %s" -P 'Move to desktop: '
+bindsym $mod+dollar exec --no-startup-id i3-input -F "move --no-auto-back-and-forth container to workspace %s" -P 'Move to desktop: '
 
 # }}}
 
