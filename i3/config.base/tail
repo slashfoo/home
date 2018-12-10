@@ -22,4 +22,6 @@ for_window [window_role="task_dialog"] floating enable
 
 # WINDOW PROPERTIES }}}
 
+exec --no-startup-id i3-post-load
+
 # vim: set ft=i3 foldmethod=marker foldenable:

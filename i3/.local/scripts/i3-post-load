@@ -1,0 +1,62 @@
+#!/usr/bin/env zsh
+# Copyright 2018 Jamiel Almeida
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# depending on the machine, run commands after it has finished loading the
+# configuration (triggered by an 'exec' line at the end of ~/.config/i3/config)
+
+setopt pipe_fail
+unsetopt unset
+
+typeset this_dir="${${(%):-%x}:A:h}"
+typeset -aU basedirs=()
+
+typeset basedir
+for basedir in "${(s.:.)HOME_REPOS}"; do
+    [[ ! -d "${basedir}/.config/i3" ]] || basedirs+=( "${basedir}/.config/i3" )
+    [[ ! -d "${basedir}/i3" ]] || basedirs+=( "${basedir}/i3" )
+done
+
+basedirs+=(
+    "${this_dir:h:h}"
+)
+
+typeset CURR_HOST="${HOST:-$(hostname)}"
+
+typeset SCRIPT=""
+for dir in "${(@)basedirs}"; do
+    if [[ -x "${dir}/post-load/${CURR_HOST}" ]]; then
+        SCRIPT="${dir}/post-load/${CURR_HOST}"
+        break
+    elif [[ -x "${dir}/post-load.${CURR_HOST}" ]]; then
+        SCRIPT="${dir}/post-load.${CURR_HOST}"
+        break
+    fi
+done
+typeset POST_LOAD_DIR="${${(%):-%x}:A:h:h:h}/post-load"
+
+if [[  -z "${SCRIPT}" ]]; then
+    for dir in "${(@)basedirs}"; do
+        if [[ -x "${dir}/post-load/fallback" ]]; then
+            SCRIPT="${dir}/post-load/fallback"
+            break
+        elif [[ -x "${dir}/post-load.fallback" ]]; then
+            SCRIPT="${dir}/post-load.fallback"
+            break
+        fi
+    done
+fi
+
+[[ -x "${SCRIPT}" ]] || exit 0
+exec "${SCRIPT}"
