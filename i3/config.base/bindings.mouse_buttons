@@ -1,0 +1,6 @@
+bindsym --release button6 move container to workspace next; workspace next
+bindsym --release button7 move container to workspace prev; workspace prev
+bindsym --release button8 move scratchpad
+bindsym --release button9 kill
+
+# vim: set ft=i3 foldmethod=marker foldenable:
