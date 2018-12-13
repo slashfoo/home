@@ -13,19 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Set a gamma value on all of the active displays
 
-[[ -r "${HOME}/.local/xsession.local.zsh" ]] && \
-    source "${HOME}/.local/xsession.local.zsh"
+setopt pipe_fail
+unsetopt unset
 
-systemctl --user import-environment PATH DBUS_SESSION_BUS_ADDRESS
-systemctl --no-block --user start xsession.target
+typeset -gx DISPLAY="${DISPLAY:-:0}"
+typeset XRANDR_OUTPUT="$(xrandr --current --display "${DISPLAY}" 2>&1)"
 
-x11-set-gamma '0.7:0.7:0.7'
-xrandr --dpi 96
-typeset TIMESTAMP_FMT='%D{%Y%m%dT%H%M%S}'
-typeset I3_LOGFILE="${HOME}/.local/log/i3-${(%)TIMESTAMP_FMT}.log"
+typeset -a active_displays=( $(
+    perl -lne '/^(.*?) connected (.*) \(.*$/ && print $1;' <<<"${XRANDR_OUTPUT}"
+) )
 
-mkdir --parents --mode='u=rwx,go=' "${HOME}/.local/log"
-install --verbose --mode='u=rw,go=' /dev/null "${I3_LOGFILE}"
+typeset GAMMA="${1:-${GAMMA:-1.0:1.0:1.0}}"
+typeset -a cmd_line=( xrandr --verbose --display "${DISPLAY}" )
 
-exec i3 >>"${I3_LOGFILE}" 2>&1
+for display_name in ${(@)active_displays}; do
+    cmd_line+=( --output "${display_name}" --gamma "${GAMMA}" )
+done
+echo "${(@)cmd_line}"
+exec "${(@)cmd_line}"

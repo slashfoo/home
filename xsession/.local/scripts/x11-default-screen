@@ -65,6 +65,7 @@ typeset -a cmd_line=(
 cmd_line+=(
     --output "${default_display}" --primary
     --mode "${resolution}" --rate "${refresh_rate}" --pos '0x0'
+    --gamma '0.7:0.7:0.7'
 )
 
 for display_name in ${(@)connected_displays} ${(@)disconnected_displays}; do

@@ -97,6 +97,26 @@ WantedBy=xsession.target
 EOUNITFILE
 )"
 
+user_units[${HOME}/.config/systemd/user/gamma.service]="$(
+command -v x11-set-gamma >/dev/null 2>&1 && \
+cat <<-EOUNITFILE || true
+[Unit]
+Description=x11-set-gamma - sets gamma to preferred value on all displays
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=${${:-x11-set-gamma}:c:A} '0.7:0.7:0.7'
+ExecStop=${${:-x11-set-gamma}:c:A}
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=xsession.target
+WantedBy=redshift.service
+EOUNITFILE
+)"
+
 typeset did_something=
 for target_file in "${(k)user_units[@]}"; do
     [[ -n "${user_units[${target_file}]:-}" ]] || continue

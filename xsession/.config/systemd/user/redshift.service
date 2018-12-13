@@ -19,6 +19,7 @@ PartOf=graphical-session.target
 
 [Service]
 ExecStart=/usr/bin/redshift -v
+ExecStopPost=x11-set-gamma '0.7:0.7:0.7'
 Restart=on-failure
 Environment=DISPLAY=:0
 
