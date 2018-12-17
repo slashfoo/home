@@ -78,20 +78,3 @@ xkb_symbols "basic" {
 
         include "level3(ralt_switch)"
 };
-
-// Make the left Ctrl key a Hyper key (Mod4)
-xkb_symbols "lctrl_hyper" {
-    replace key <LCTL>  { [ Hyper_L ] };
-    modifier_map Mod4 { <LCTL> };
-};
-
-// Make the left Ctrl key a Hyper key (Mod4)
-xkb_symbols "rwin_altgr" {
-    replace key <RWIN>  { [ ISO_Level3_Shift ] };
-};
-
-// Swap PageUp and PageDown keys
-xkb_symbols "pgup_pgdn" {
-    key <PGUP> { [ Next ] };
-    key <PGDN> { [ Prior ] };
-};
