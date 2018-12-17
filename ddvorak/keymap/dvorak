@@ -16,6 +16,6 @@ xkb_keymap {
 	xkb_keycodes  { include "evdev+aliases(qwerty)"	};
 	xkb_types     { include "complete"	};
 	xkb_compat    { include "complete+ledcaps(group_lock)"	};
-	xkb_symbols   { include "pc+us(dvorak)+us:2+inet(evdev)+ddvorak(lctrl_hyper)+ddvorak(rwin_altgr)+ddvorak(pgup_pgdn)+capslock(ctrl_modifier)+terminate(ctrl_alt_bksp)"	};
+	xkb_symbols   { include "pc+us(dvorak)+us:2+inet(evdev)+capslock(ctrl_modifier)+terminate(ctrl_alt_bksp)"	};
 	xkb_geometry  { include "pc(pc105)"	};
 };
