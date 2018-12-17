@@ -32,7 +32,7 @@ sudo tee /etc/default/keyboard <<-EOKEYBOARDCONF
 	XKBMODEL="pc105"
 	XKBLAYOUT="us"
 	XKBVARIANT="dvorak"
-	XKBOPTIONS="lv3:ralt_switch,compose:lwin,terminate:ctrl_alt_bksp,caps:ctrl_modifier,ctrl:lctrl_meta"
+	XKBOPTIONS="lv3:ralt_switch,compose:lwin,caps:ctrl_modifier,terminate:ctrl_alt_bksp"
 
 	BACKSPACE="guess"
 EOKEYBOARDCONF
