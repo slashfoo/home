@@ -141,19 +141,21 @@ function! ext_plugin_settings#set_variables()
     " }}}
     " fzf {{{
     let g:fzf_layout = { 'down': '~80%' }
+    let g:fzf_action = { 'enter': 'edit' }
     let g:fzf_colors =
-    \ { 'fg':      ['fg', 'Normal'],
-      \ 'bg':      ['bg', 'Normal'],
-      \ 'hl':      ['fg', 'Function'],
-      \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-      \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-      \ 'hl+':     ['fg', 'String'],
-      \ 'info':    ['fg', 'PreProc'],
-      \ 'prompt':  ['fg', 'Conditional'],
-      \ 'pointer': ['fg', 'Exception'],
-      \ 'marker':  ['fg', 'Keyword'],
-      \ 'spinner': ['fg', 'Label'],
-      \ 'header':  ['fg', 'Comment'] }
+    \ { 'fg':      ['fg', 'FzfNormal', 'Normal'],
+      \ 'bg':      ['bg', 'FzfNormal', 'Normal'],
+      \ 'hl':      ['fg', 'FzfMatch', 'Function'],
+      \ 'fg+':     ['fg', 'FzfCurrLine', 'CursorLine', 'CursorColumn', 'Normal'],
+      \ 'bg+':     ['bg', 'FzfCurrLine', 'CursorLine', 'CursorColumn'],
+      \ 'hl+':     ['fg', 'FzfMatchCurrLine', 'String'],
+      \ 'info':    ['fg', 'FzfInfo', 'PreProc'],
+      \ 'prompt':  ['fg', 'FzfPrompt', 'PreProc'],
+      \ 'pointer': ['fg', 'FzfPointer', 'Conditional'],
+      \ 'marker':  ['fg', 'FzfMarker', 'Exception'],
+      \ 'spinner': ['fg', 'FzfSpinner', 'Keyword'],
+      \ 'header':  ['fg', 'FzfHeader', 'Label'],
+      \ }
     " }}}
     " indent-guides {{{
     let g:indent_guides_enable_on_vim_startup = 1

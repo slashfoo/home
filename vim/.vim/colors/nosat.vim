@@ -244,6 +244,30 @@ highlight! clear _exchange_region
 highlight! link  _exchange_region               ExchangeRegion
 
 " }}}
+" fzf {{{
+
+highlight! clear FzfNormal
+highlight!       FzfNormal                      ctermfg=NONE ctermbg=NONE cterm=NONE           guifg=NONE    guibg=NONE    gui=NONE
+highlight! clear FzfCurrLine
+highlight!       FzfCurrLine                    ctermfg=015  ctermbg=235  cterm=NONE           guifg=#EEEEEE guibg=#262626 gui=NONE
+highlight! clear FzfMatch
+highlight!       FzfMatch                       ctermfg=002  ctermbg=NONE cterm=NONE           guifg=#A1B56C guibg=NONE    gui=NONE
+highlight! clear FzfMatchCurrLine
+highlight!       FzfMatchCurrLine               ctermfg=010  ctermbg=NONE cterm=NONE           guifg=#C5DA8B guibg=NONE    gui=NONE
+highlight! clear FzfInfo
+highlight!       FzfInfo                        ctermfg=004  ctermbg=NONE cterm=NONE           guifg=#7CAFC2 guibg=NONE    gui=NONE
+highlight! clear FzfPrompt
+highlight! link  FzfPrompt                      FzfInfo
+highlight! clear FzfPointer
+highlight! link  FzfPointer                     FzfInfo
+highlight! clear FzfMarker
+highlight! link  FzfMarker                      FzfInfo
+highlight! clear FzfSpinner
+highlight!       FzfSpinner                     ctermfg=003  ctermbg=NONE cterm=NONE           guifg=#DBA656 guibg=NONE    gui=NONE
+highlight! clear FzfHeader
+highlight!       FzfHeader                      ctermfg=007  ctermbg=NONE cterm=NONE           guifg=#CCCCCC guibg=NONE    gui=NONE
+
+" }}}
 " fugitive {{{
 
 highlight! link diffAdded                       DiffAdd
