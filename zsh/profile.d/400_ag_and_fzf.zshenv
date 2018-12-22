@@ -119,7 +119,6 @@ typeset -gx FZF_CTRL_T_OPTS="${(j: :)fzf_ctrl_t_opts}"
 typeset -gx FZF_COMPLETION_OPTS="${(j: :)fzf_completion_opts}"
 
 if command -v ag >/dev/null 2>&1; then
-
     typeset -a fzf_default_command=(
         "${(@)ag_alias}"
         '--nocolor'
