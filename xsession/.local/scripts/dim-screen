@@ -93,7 +93,7 @@ print_usage () {
 }
 
 typeset -i RETCODE=0
-typeset DO_RUN=no
+typeset DO_RUN="${DO_RUN:-no}"
 while getopts ":hxb:f:t:s:i:" opt; do
     case "${opt}" in
         h)
