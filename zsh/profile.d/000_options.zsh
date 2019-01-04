@@ -21,6 +21,7 @@ setopt auto_cd
 setopt auto_pushd
 setopt cdable_vars
 setopt complete_in_word
+setopt dvorak
 setopt interactive_comments
 setopt glob_dots
 setopt path_dirs
