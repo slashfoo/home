@@ -17,9 +17,10 @@ Description=Lock screen as a screensaver using xss-lock
 PartOf=graphical-session.target
 
 [Service]
-ExecStart=/usr/bin/xss-lock -n ${HOME}/.local/scripts/dim-screen -- ${HOME}/.local/scripts/lock-now
+ExecStart=/usr/bin/xss-lock --verbose --notifier="${HOME}/.local/scripts/dim-screen" -- ${HOME}/.local/scripts/lock-now
 Restart=on-failure
 Environment=DISPLAY=:0
+Environment=DO_RUN=yes
 
 [Install]
 WantedBy=xsession.target
