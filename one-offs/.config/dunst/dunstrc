@@ -16,21 +16,23 @@
 # ~lightdm/.config/dunst/dunstrc with a copy of this file with the following
 # changes
 
-#  @@ -44,5 +44,5 @@
-#   [shortcuts]
-# -     close = mod4+asciicircum
-# -     close_all = mod4+shift+asciicircum
-# -     history = mod4+ctrl+asciicircum
-# -     context = mod4+mod1+asciicircum
-# +     close =
-# +     close_all =
-# +     history =
-# +     context =
+# @@ -61,6 +61,6 @@
+#  [shortcuts]
+# -    close = mod4+asciicircum
+# -    close_all = mod4+shift+asciicircum
+# -    history = mod4+ctrl+asciicircum
+# -    context = mod4+mod1+asciicircum
+# +    close =
+# +    close_all =
+# +    history =
+# +    context =
+#
+
 
 [global]
     font = "Fira Code 16"
     markup = full
-    format = "<b>%s</b>\n%b"
+    format = "<b>%a:: %s</b>\n%b"
     sort = yes
     indicate_hidden = yes
     alignment = center
@@ -54,6 +56,9 @@
     startup_notification = false
     frame_width = 1
     frame_color = "#3A3A3A"
+    icon_path = /usr/share/icons/gnome/48x48/actions:/usr/share/icons/gnome/48x48/animations:/usr/share/icons/gnome/48x48/apps:/usr/share/icons/gnome/48x48/categories:/usr/share/icons/gnome/48x48/devices:/usr/share/icons/gnome/48x48/emblems:/usr/share/icons/gnome/48x48/emotes:/usr/share/icons/gnome/48x48/mimetypes:/usr/share/icons/gnome/48x48/places:/usr/share/icons/gnome/48x48/status
+    icon_position = left
+    max_icon_size = 48
 
 [shortcuts]
     close = mod4+asciicircum
@@ -78,3 +83,10 @@
     foreground = "#BF5D5A"
     frame_color = "#BF5D5A"
     timeout = 0
+
+[solaar-powered-on]
+    appname = "Solaar"
+    body = "powered on"
+    format = ""
+
+# vim: set ft=conf:
