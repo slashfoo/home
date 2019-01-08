@@ -171,7 +171,7 @@ unset RPROMPT2_ELEMS
 # set tmux's or terminal emulator's title for the enclosing window
 term-title () {
     [[ "${#}" -gt 0 ]] || set -- "${TERM}"
-    echo -ne $'\033]0;'"${@}"'\a'
+    echo -ne $'\033]0;'"${@}"'\a' || :
 }
 
 # Intended to be run before each prompt, set the title to the current working
