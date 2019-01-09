@@ -1,0 +1,108 @@
+* Copyright 2018 Jamiel Almeida
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+
+[kpshft]>[menu]
+{kp-4}>{-lalt}{f4}{+lalt}
+{kp-n}>{-lwin}{f1}{+lwin}
+
+* Left Thumb Cluster
+[lctrl]>[lwin]
+[lalt]>[lalt]
+* [bspace]
+* [delete]
+[home]>[pdown]
+[end]>[home]
+
+* Left Thumb Cluster (KP)
+[kp-lctrl]>[lwin]
+[kp-lalt]>[lalt]
+* [kp-bspace]
+* [kp-delete]
+[kp-home]>[pdown]
+[kp-end]>[home]
+
+* Right Thumb Cluster
+[rwin]>[ralt]
+[rctrl]>[kpshft]
+* [pup]
+[pdown]>[end]
+[enter]
+[space]
+
+* Right Thumb Cluster (KP)
+[kp-rwin]>[ralt]
+[kp-rctrl]>[kpshft]
+* [kp-pup]
+[kp-pdown]>[end]
+* [kp-enter]
+* [kp0]
+
+* F-Row Left
+[escape]>[insert]
+* [F1]
+* [F2]
+* [F3]
+* [F4]
+* [F5]
+* [F6]
+* [F7]
+* [F8]
+
+* F-Row Left (KP)
+[kp-escape]>[insert]
+* [kp-lwin]
+* [kp-ralt]
+* [kp-menu]
+* [play]
+* [prev]
+* [next]
+* [calc]
+* [kpshift]
+
+* F-Row Right
+* [F9]
+* [F10]
+* [F11]
+* [F12]
+* [prtscr]
+* [scroll]
+* [pause]
+
+* F-Row Right (KP)
+* [kp-F9]
+* [kp-F10]
+* [kp-F11]
+* [kp-F12]
+* [mute]
+* [vol-]
+* [vol+]
+
+* Main Well Left
+[caps]>[lctrl]
+[intl-\]>[escape]
+
+* Main Well Left (KP)
+[kp-caps]>[lctrl]
+[kp-insert]>[escape]
+
+* Main Well Right
+[up]>[down]
+[down]>[up]
+
+* Main Well Right (KP)
+[kpenter1]>[kp0]
+[kp-up]>[down]
+[kp-down]>[up]
+
+* vim: set ff=dos commentstring=\*\ %s:
