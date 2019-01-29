@@ -5,6 +5,5 @@ macro_disable=OFF
 macro_speed=9
 status_play_speed=4
 power_user=true
-v_drive_open_on_startup=ON
 
 * vim: set ff=dos:

@@ -12,10 +12,6 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 
-[kpshft]>[menu]
-{kp-4}>{-lalt}{f4}{+lalt}
-{kp-n}>{-lwin}{f1}{+lwin}
-
 * Left Thumb Cluster
 [lctrl]>[lwin]
 [lalt]>[lalt]
@@ -68,7 +64,7 @@
 * [prev]
 * [next]
 * [calc]
-* [kpshift]
+[kpshft]>[menu]
 
 * F-Row Right
 * [F9]
@@ -93,14 +89,22 @@
 [intl-\]>[escape]
 
 * Main Well Left (KP)
+{kp-4}>{-lalt}{f4}{+lalt}
 [kp-caps]>[lctrl]
-[kp-insert]>[escape]
+[kp-x]>[mute]
+[kp-c]>[vol-]
+[kp-v]>[vol+]
+{kp-b}>{-lwin}{prtscr}{+lwin}
+[kp-insert]>[play]
+[kp-left]>[prev]
+[kp-right]>[next]
 
 * Main Well Right
 [up]>[down]
 [down]>[up]
 
 * Main Well Right (KP)
+{kp-n}>{-lwin}{f1}{+lwin}
 [kpenter1]>[kp0]
 [kp-up]>[down]
 [kp-down]>[up]

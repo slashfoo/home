@@ -64,7 +64,7 @@
 * [prev]
 * [next]
 * [calc]
-* [kpshft]
+[kpshft]>[menu]
 
 * F-Row Right
 * [F9]
@@ -90,13 +90,20 @@
 [caps]>[lctrl]
 [;]>[']
 [intl-\]>[escape]
+{kp-x}>{-lwin}{prtscr}{+lwin}
 
 * Main Well Left (KP)
 [kp-=]>[obrack]
+{kp-4}>{-lalt}{f4}{+lalt}
 [kp-']>[;]
 [kp-caps]>[lctrl]
 [kp-;]>[']
-[kp-insert]>[escape]
+[kp-q]>[mute]
+[kp-j]>[vol-]
+[kp-k]>[vol+]
+[kp-insert]>[play]
+[kp-left]>[prev]
+[kp-right]>[next]
 
 * Main Well Right
 [hyphen]>[cbrack]
@@ -112,6 +119,7 @@
 [kp-/]>[=]
 [kp-\]>[hyphen]
 [kpenter1]>[kp0]
+{kp-b}>{-lwin}{f1}{+lwin}
 [kp-up]>[down]
 [kp-down]>[up]
 
