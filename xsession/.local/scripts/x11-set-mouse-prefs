@@ -26,6 +26,10 @@ xinput set-prop \
     'libinput Natural Scrolling Enabled' 1
 
 xinput set-prop \
+    pointer:'Logitech USB Receiver Mouse' \
+    'libinput Natural Scrolling Enabled' 1
+
+xinput set-prop \
     pointer:'Clearly Superior Technologies. CST Laser Trackball' \
     'libinput Natural Scrolling Enabled' 1
 
