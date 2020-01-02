@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 # Copyright 2018 Jamiel Almeida
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,34 +13,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -eu -o pipefail
+setopt pipe_fail
+setopt xtrace
+unsetopt unset
 
-typeset SINX=
-if pacmd list-sinks | \
-    grep -q alsa_output.usb-GN_Netcom_A_S_Jabra_EVOLVE_LINK; then
-    SINK="$(
-        pacmd list-sinks | \
-            grep 'alsa_output.usb-GN_Netcom_A_S_Jabra_EVOLVE_LINK' | \
-            sed -e 's/^.*<\(.*\)\>.*$/\1/'
-    )"
-    SOURCE="$(
-        pacmd list-sources | \
-            grep 'alsa_input.usb-GN_Netcom_A_S_Jabra_EVOLVE_LINK' | \
-            sed -e 's/^.*<\(.*\)\>.*$/\1/'
-    )"
+typeset card_number="$(
+    pactl list short cards 2>/dev/null | \
+        awk '/Jabra_EVOLVE_LINK/ {print $1;}'
+)"
+if [[ -z "${card_number}" ]]; then
+    exec volume-defaults
 fi
+
+pactl \
+    set-card-profile "${card_number}" \
+    'output:analog-stereo+input:analog-mono' 2>/dev/null
+
+
+typeset SINK="$(
+    pactl list short sinks | \
+        awk '/alsa_output.usb-.*Jabra_EVOLVE_LINK/ {print $2;}'
+)"
+typeset SOURCE="$(
+    pactl list short sources | \
+        awk '/alsa_input.usb-.*Jabra_EVOLVE_LINK/ {print $2;}'
+)"
+
 if [[ -z "${SINK:-}" ]] || [[ "${1:-}" == "-x" ]]; then
     exec volume-defaults
 fi
 
-pacmd set-default-sink "${SINK}"
-pactl set-sink-volume "${SINK}" '50%'
-pacmd list-sink-inputs | \
-    awk '$1 == "index:" {print $2}' | \
-    xargs -I% -r pacmd move-sink-input % "${SINK}"
+pactl set-default-sink "${SINK}"
+pactl set-sink-volume "${SINK}" '30%'
+pactl list short sink-inputs | awk '{print $1}' | \
+    xargs -I% -r pactl move-sink-input % "${SINK}"
 
-pacmd set-default-source "${SOURCE}"
+pactl set-default-source "${SOURCE}"
 pactl set-source-volume "${SOURCE}" '50%'
-pacmd list-source-outputs |
-    awk '$1 == "index:" {print $2}' |
-    xargs -I% -r pacmd move-source-output % "${SOURCE}"
+pactl list short source-outputs | awk '{print $1}' | \
+    xargs -I% -r pactl move-source-output % "${SOURCE}"
