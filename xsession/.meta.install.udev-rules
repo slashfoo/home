@@ -18,25 +18,35 @@
 setopt err_exit
 setopt no_unset
 setopt pipe_fail
+setopt xtrace
 
 typeset -A udev_rules=()
 
-udev_rules[/etc/udev/rules.d/59-cst-trackball.rules]="$(
+
+udev_rules[/etc/udev/rules.d/59-0-mouse-prefs-for-${USER}.rules]="$(
 command -v x11-set-mouse-prefs >/dev/null 2>&1 && \
 cat <<-EORULESFILE || true
+	# CST Laser Trackball
 	ACTION=="add", \
-	SUBSYSTEM=="hidraw", \
-	ATTRS{idVendor}=="5332", \
-	ATTRS{idProduct}=="1400", \
+	SUBSYSTEM=="input", \
+	ENV{DEVPATH}=="*/mouse*", \
+	ATTR{idVendor}=="5332", \
+	ATTR{idProduct}=="1400", \
 	ENV{DISPLAY}=":0", \
 	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
 	RUN+="${${:-su}:c} ${USER} -c '${${:-x11-set-mouse-prefs}:c:A} -x'"
-EORULESFILE
-)"
 
-udev_rules[/etc/udev/rules.d/59-logitech-mx-anywhere-2.rules]="$(
-command -v x11-set-mouse-prefs >/dev/null 2>&1 && \
-cat <<-EORULESFILE || true
+	# Logitech MX Ergo
+	ACTION=="add", \
+	SUBSYSTEM=="hidraw", \
+	ENV{DEVPATH}=="*/mouse*", \
+	ATTR{idVendor}=="046d", \
+	ATTR{idProduct}=="c52b", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-x11-set-mouse-prefs}:c:A} -x'"
+
+	# Logitech MX Anywhere 2
 	ACTION=="add", \
 	SUBSYSTEM=="hidraw", \
 	ATTRS{idVendor}=="046d", \
@@ -47,40 +57,196 @@ cat <<-EORULESFILE || true
 EORULESFILE
 )"
 
-udev_rules[/etc/udev/rules.d/59-kinesis-advantage2.rules]="$(
+udev_rules[/etc/udev/rules.d/59-1-ddvorak-layout-for-${USER}.rules]="$(
 command -v ddvorak >/dev/null 2>&1 && \
 cat <<-EORULESFILE || true
+	# Kinesis Advantage
 	ACTION=="add", \
 	SUBSYSTEM=="hidraw", \
-	ATTRS{idVendor}=="29ea", \
-	ATTRS{idProduct}=="0102", \
+	ATTRS{idVendor}=="05f3", \
+	ATTRS{idProduct}=="0007", \
 	ENV{DISPLAY}=":0", \
 	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
-	RUN+="${${:-su}:c} ${USER} -c '${${:-ddvorak}:c:A} -x'"
+	RUN+="${${:-su}:c} ${USER} -c '${${:-ddvorak}:c:A}'"
+
+	# Kinesis Advantage2 KB600QD
+	ACTION=="bind", \
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="29ea", \
+	ATTR{idProduct}=="0102", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-ddvorak}:c:A}'"
+
+	# Leopold FC200RT + MX Blue
+	ACTION=="bind", \
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="04b4", \
+	ATTR{idProduct}=="0101", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-ddvorak}:c:A}'"
+
+	# OLKB Planck Light running QMK
+	ACTION=="bind", \
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="8bad", \
+	ATTR{idProduct}=="feed", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-ddvorak}:c:A}'"
+
+	# OLKB Preonic running QMK
+	ACTION=="bind", \
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="8bad", \
+	ATTR{idProduct}=="cafe", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-ddvorak}:c:A}'"
+
+	# Hasu's USB to USB converter running QMK
+	ACTION=="bind", \
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="8bad", \
+	ATTR{idProduct}=="f00d", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-ddvorak}:c:A}'"
+
+	# ErgoDox running QMK
+	ACTION=="bind", \
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="8bad", \
+	ATTR{idProduct}=="beef", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-ddvorak}:c:A}'"
+
+	# ErgoDox infinity running QMK
+	ACTION=="bind", \
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="8bad", \
+	ATTR{idProduct}=="bee5", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-ddvorak}:c:A}'"
 EORULESFILE
 )"
 
-udev_rules[/etc/udev/rules.d/59-thinkpad-onelink-plus.rules]="$(
-command -v thinkpad-dock >/dev/null 2>&1 && \
-command -v thinkpad-undock >/dev/null 2>&1 && \
+udev_rules[/etc/udev/rules.d/59-2-keyboard-boots-for-${USER}.rules]="$(
+command -v ddvorak >/dev/null 2>&1 && \
 cat <<-EORULESFILE || true
-	ACTION=="add", \
+	# USB ASP
 	SUBSYSTEM=="usb", \
-	ATTRS{idVendor}=="17ef", \
-	ATTRS{idProduct}=="3055", \
-	ENV{DISPLAY}=":0", \
-	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
-	RUN+="${${:-su}:c} ${USER} -c '${${:-thinkpad-dock}:c:A}'"
+	ATTRS{idVendor}=="16c0", \
+	ATTRS{idProduct}=="05dc", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
+	SUBSYSTEM=="usb", \
+	ATTRS{idVendor}=="046d", \
+	ATTRS{idProduct}=="aaaa", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
 
-	ACTION=="remove", \
+	# Logitech Unifying Receiver Dongle
 	SUBSYSTEM=="usb", \
-	ATTRS{idVendor}=="17ef", \
-	ATTRS{idProduct}=="3055", \
-	ENV{DISPLAY}=":0", \
-	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
-	RUN+="${${:-su}:c} ${USER} -c '${${:-thinkpad-undock}:c:A}'"
+	ATTRS{idVendor}=="046d", \
+	ATTRS{idProduct}=="c52b", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
+	SUBSYSTEM=="usb", \
+	ATTRS{idVendor}=="046d", \
+	ATTRS{idProduct}=="aaaa", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
+
+	# Adafruit Industries nRF52840 of my homebrew keyboard
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="239a", \
+	ATTR{idProduct}=="8029", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
+
+	# STMicroelectronics STM32 of the OLKB preonic keyboard
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="0483", \
+	ATTR{idProduct}=="df11", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
+
+	# Atmel AT90USB128 of the OLKB planck light keyboard
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="03eb", \
+	ATTR{idProduct}=="2ffb", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
+
+	# PJRC STM32 of the ErgoDox Infinity keyboard
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="1c11", \
+	ATTR{idProduct}=="b007", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
+
+	# ATMEL ATm32U4DFU of hasu usb_usb converter
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="03eb", \
+	ATTR{idProduct}=="2ff4", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
+
+	# ATMEL ATm32U4DFU for SouthpawEngineer Zeta
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="feed", \
+	ATTR{idProduct}=="6060", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
+
+	# Kiibohd Ergodox Infinity
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="1c11", \
+	ATTR{idProduct}=="b007", \
+	GROUP="plugdev", \
+	MODE="0666", \
+	TAG+="uaccess"
 EORULESFILE
 )"
+
+
+udev_rules[/etc/udev/rules.d/55-3-audio-dev-rules-for-${USER}.rules]="$(
+command -v audio-jabra >/dev/null 2>&1 && \
+cat <<-EORULESFILE || true
+	# Jabra Evolve 80 headphones
+	ACTION=="bind", \
+	SUBSYSTEM=="usb", \
+	ATTR{idVendor}=="0b0e", \
+	ATTR{idProduct}=="0306", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-audio-jabra}:c:A}'"
+	ACTION=="remove", \
+	SUBSYSTEM=="sound", \
+	ATTR{idVendor}=="0b0e", \
+	ATTR{idProduct}=="0306", \
+	ENV{REMOVED}!="yes", \
+	ENV{REMOVED}="yes", \
+	ENV{DISPLAY}=":0", \
+	ENV{XAUTHORITY}="${HOME}/.Xauthority", \
+	RUN+="${${:-su}:c} ${USER} -c '${${:-volume-defaults}:c:A}'"
+EORULESFILE
+)"
+
 
 typeset did_something=
 for target_file in "${(k)udev_rules[@]}"; do
