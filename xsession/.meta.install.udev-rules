@@ -247,7 +247,6 @@ cat <<-EORULESFILE || true
 EORULESFILE
 )"
 
-
 typeset did_something=
 for target_file in "${(k)udev_rules[@]}"; do
     [[ -n "${udev_rules[${target_file}]:-}" ]] || continue
