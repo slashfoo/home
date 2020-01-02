@@ -11,3 +11,5 @@ __pycache__/*
 *.py[co]
 *.so
 *.zwc
+.gotest.sed
+.build/*

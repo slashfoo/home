@@ -1,0 +1,12 @@
+###########################
+# xbindkeys configuration #
+###########################
+
+"/usr/bin/xte 'key Home' &"
+    b:7 + Release
+"/usr/bin/xte 'key End' &"
+    b:6 + Release
+
+##################################
+# End of xbindkeys configuration #
+##################################
