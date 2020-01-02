@@ -26,6 +26,7 @@ let s:nosat_file = expand("<sfile>:h:p") . "/nosat.vim"
 let g:nosat_import = 1
 execute 'source ' . s:nosat_file
 
+highlight!       Comment                        ctermfg=006  ctermbg=NONE cterm=NONE           guifg=#55B4A8 guibg=NONE    gui=NONE
 highlight!       Constant                       ctermfg=001  ctermbg=NONE cterm=NONE           guifg=#BF5D5A guibg=NONE    gui=NONE
 highlight!       String                         ctermfg=002  ctermbg=NONE cterm=NONE           guifg=#A1B56C guibg=NONE    gui=NONE
 highlight!       StringDelimiter                ctermfg=002  ctermbg=NONE cterm=NONE           guifg=#A1B56C guibg=NONE    gui=NONE
