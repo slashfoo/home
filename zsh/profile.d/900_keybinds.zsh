@@ -82,7 +82,9 @@ fancy-ctrl-z () {
     local NUM_JOBS="${(%):-%j}"
     if [[ "${NUM_JOBS}" -gt 0 ]] && [[ $#BUFFER -eq 0 ]]; then
         # background jobs present and empty buffer, runs `fg`
-        BUFFER="fg"
+        fg
+        zle push-input
+        BUFFER=""
         zle accept-line
     elif [[ $#BUFFER -ne 0 ]]; then
         # non-empty buffer

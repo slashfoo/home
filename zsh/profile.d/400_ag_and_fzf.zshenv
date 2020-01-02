@@ -49,10 +49,10 @@ typeset -a fzf_default_opts=(
 () {
     local -A raw_bind_opts=()
     local -a bind_opts=()
-    raw_bind_opts[?]='toggle-preview'
     raw_bind_opts[change]='top'
     raw_bind_opts[tab]='toggle-out'
     raw_bind_opts[btab]='toggle-in'
+    raw_bind_opts[f2]='toggle-preview'
     raw_bind_opts[f3]='select-all'
     raw_bind_opts[f4]='deselect-all'
     raw_bind_opts[f5]='toggle-all'
