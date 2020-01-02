@@ -274,7 +274,7 @@ fi
 maim_cmd+=(
     --format="${FORMAT}"
     --quality="${QUALITY}"
-    --delay=0.1
+    --delay=0.3
     --quiet
     --tolerance=10
     --padding=10
