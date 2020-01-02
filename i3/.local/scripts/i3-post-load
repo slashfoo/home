@@ -21,6 +21,7 @@ unsetopt unset
 
 typeset this_dir="${${(%):-%x}:A:h}"
 typeset -aU basedirs=()
+typeset HOME_REPOS="${HOME_REPOS:-}"
 
 typeset basedir
 for basedir in "${(s.:.)HOME_REPOS}"; do
