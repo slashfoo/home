@@ -25,12 +25,12 @@ if not snip.c:
 	rand = ''.join(random.sample(string.ascii_letters+string.digits, 8))
 	snip.rv = ('%s__%s' % (name,rand)).upper()
 else:
-	snip.rv = snip.c`}
+	snip.rv = snip.c`} /* {{{ */
 #define $1
 
 ${0:${VISUAL}}
 
-#endif /* ifndef $1 */
+#endif /* ifndef $1 }}} */
 endsnippet
 
 snippet def "#define ..." b
@@ -38,10 +38,17 @@ snippet def "#define ..." b
 $0
 endsnippet
 
+snippet idef "#ifdef ... #endif" b
+#ifdef ${1:SYMBOL} /* {{{ */
+
+${0:${VISUAL}}
+
+#endif /* ifdef $1 }}} */
+endsnippet
 snippet ndef "#ifndef ... #define ... #endif" b
-#ifndef $1
-#define ${1:SYMBOL} ${2:value}
-#endif /* ifndef $1 */
+#ifndef $1 /* {{{ */
+#define ${1:SYMBOL}${2/(.+)/ /}${2:value}
+#endif /* ifndef $1 }}} */
 endsnippet
 
 snippet inc "#include <...>" b
