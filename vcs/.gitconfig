@@ -50,7 +50,15 @@
     renames = copies
     prompt = false
 [format]
-    pretty = fuller
+    pretty = "\
+Hash:       %C(auto)%H%Creset %C(auto)%d%Creset%n\
+ShortHash:  %C(auto)%h%Creset%n\
+Author:     \"%C(green)%an%Creset\" <%C(magenta)%ae%Creset>%n\
+AuthorDate: %ci %C(dim)(%cr)%Creset%n\
+Commit:     \"%C(green)%cN%Creset\" <%C(magenta)%cE%Creset>%n\
+CommitDate: %ci %C(dim)(%cr)%Creset%n\
+Subject:    %C(blue)%s%Creset%n%n\
+%b"
 [alias]
     personal = config --local user.email jamiel.almeida@gmail.com
     work = config --local user.email jamielalmeida@google.com
