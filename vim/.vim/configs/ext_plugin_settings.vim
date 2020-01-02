@@ -29,6 +29,7 @@ Plug 'bronson/vim-visual-star-search'
 Plug 'google/vim-codefmt'
 Plug 'itchyny/lightline.vim'
 Plug 'jiangmiao/auto-pairs'
+" TODO(jamielalmeida): check out Plug 'svermeulen/vim-subversive'
 
 if executable('fzf')
     " Only load fzf plugins if we have the executable installed
@@ -72,8 +73,9 @@ Plug 'plasticboy/vim-markdown'
 Plug 'nelstrom/vim-subrip'
 Plug 'rust-lang/rust.vim'
 Plug 'mattn/emmet-vim'
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+" Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 Plug 'buoto/gotests-vim', {'do': 'go get -v github.com/cweill/gotests/gotests'}
+Plug 'sirtaj/vim-openscad'
 
 " Putting vim-polyglot at the end to wor around a vim-go bug.
 " Bug URL: https://github.com/fatih/vim-go/issues/2045#issuecomment-437197496
@@ -260,6 +262,7 @@ function! ext_plugin_settings#set_variables()
     \ }
     " }}}
     " netrw {{{
+    let g:netrw_fastbrowse = 0
     let g:netrw_bufsettings = ''
     let g:netrw_bufsettings .= 'nomodifiable nomodified nonumber '
     let g:netrw_bufsettings .= 'nobuflisted nowrap readonly '

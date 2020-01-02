@@ -181,6 +181,8 @@ function! VimRC_Bwipeout() " {{{
     endtry
     try
         bwipeout #
+    catch /E89:/
+        bwipeout! #
     catch /E517:/
     endtry
 endfunction " }}}
@@ -519,7 +521,7 @@ set noendofline
 set splitbelow
 set splitright
 
-set nohidden
+set hidden
 set exrc   " enable local .vimrc's, I like to live dangerously
 set secure " but not too dangerously, so disable unsafe scary stuff from
            " local .vimrc's
@@ -1153,9 +1155,6 @@ augroup vimrc_general
                 \| silent! loadview
                 \| execute 'lcd ' . b:old_pwd
                 \| unlet b:old_pwd
-                \| if &ft != 'netrw'
-                \|     set bufhidden=hide
-                \| endif
                 \| execute 'normal! zvzz'
     autocmd BufWinLeave * silent! mkview
 
