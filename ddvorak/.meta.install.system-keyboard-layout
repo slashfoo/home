@@ -42,10 +42,11 @@ sudo dpkg-reconfigure -f noninteractive keyboard-configuration
 fi
 
 if ! grep --silent \
-    'GRUB_CMDLINE_LINUX=".*setkmap=dvorak.*"' /etc/default/grub; then
+    'GRUB_CMDLINE_LINUX=".*setkmap=.*"' /etc/default/grub; then
 
     sudo sed -i.bk \
-        -e '/^GRUB_CMDLINE_LINUX\=/s#$# setkmap=dvorak#' /etc/default/grub
+        -E -e '/^GRUB_CMDLINE_LINUX\=/s#(['"'"'"])?$# setkmap=dvorak\1#' \
+        /etc/default/grub
     sudo update-grub
 
 fi
