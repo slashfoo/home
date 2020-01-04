@@ -21,14 +21,14 @@ typeset -a USER_FUNC_DIRS=(
     "${ZDOTDIR}/completions"
     "${HOME}/.local/share/zsh/site-functions"
 )
-typeset COMPL_FUNC_DIR
+typeset COMPL_FUNC_DIR=''
 for COMPL_FUNC_DIR in "${(aO)USER_FUNC_DIRS[@]}"; do
     typeset -a FUNCS_IN_DIR=( "${COMPL_FUNC_DIR}"/**/_(^*.zwc)(#q-N.) )
     [[ "${#FUNCS_IN_DIR[@]}" -gt 0 ]] || continue
     if [[ -z "${fpath[(r)${COMPL_FUNC_DIR}]}" ]]; then
         fpath=( "${COMPL_FUNC_DIR}" "${fpath[@]}" )
     fi
-    typeset FUNC_FILEPATH
+    typeset FUNC_FILEPATH=''
     for FUNC_FILEPATH in "${FUNCS_IN_DIR[@]}"; do
         zcompile -Uz "${FUNC_FILEPATH}"
     done

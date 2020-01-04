@@ -29,14 +29,14 @@ typeset -a USER_FUNC_DIRS=(
     "${HOME}/.local/zsh/functions"
 )
 
-typeset FUNC_DIR
+typeset FUNC_DIR=''
 for FUNC_DIR in "${(aO)USER_FUNC_DIRS[@]}"; do
     typeset -a FUNCS_IN_DIR=( "${FUNC_DIR}"/**/(^*.zwc)(#q-N.) )
     [[ "${#FUNCS_IN_DIR[@]}" -gt 0 ]] || continue
-    if [[ -z "${fpath[(r)${FUNC_DIR}]}" ]]; then
+    if [[ -z "${fpath[(r)${FUNC_DIR}]:-}" ]]; then
         fpath=( "${FUNC_DIR}" "${fpath[@]}" )
     fi
-    typeset FUNC_FILE
+    typeset FUNC_FILE=''
     for FUNC_FILE in "${FUNCS_IN_DIR[@]}"; do
         autoload -Uz "${FUNC_FILE:t}"
     done

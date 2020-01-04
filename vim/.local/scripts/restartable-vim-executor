@@ -109,7 +109,7 @@ clean-up () {
 trap clean-up ERR EXIT QUIT
 
 
-typeset -i EXIT_CODE
+typeset -i EXIT_CODE=0
 
 reload-display-var
 "${INTENDED}" "${@}"

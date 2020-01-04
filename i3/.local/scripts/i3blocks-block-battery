@@ -49,16 +49,16 @@ typeset icon_25_pcent=$'\uf243'
 typeset icon_empty=$'\uf244'
 typeset icon_charging=$'\uf376'
 
-typeset -F 2 pcent_left
-typeset -i10 power_now   # how much am I drawing right this second? in W
-typeset -i10 energy_now  # How much juice is left. In Wh
-typeset -i10 energy_full # Usable maximum capacity (<=.../energy_full_design)
-typeset      charge_status
-typeset -i10 estimated_s_left
-typeset      left_h
-typeset      left_m
-typeset      left_s
-typeset pretty_t_left
+typeset -F 2 pcent_left=0.00
+typeset -i10 power_now=0   # how much am I drawing right this second? in W
+typeset -i10 energy_now=0  # How much juice is left. In Wh
+typeset -i10 energy_full=0 # Usable maximum capacity (<=.../energy_full_design)
+typeset      charge_status=''
+typeset -i10 estimated_s_left=0
+typeset      left_h=''
+typeset      left_m=''
+typeset      left_s=''
+typeset pretty_t_left=''
 
 read -r power_now     <"${battery_dir}/power_now"
 read -r energy_now    <"${battery_dir}/energy_now"

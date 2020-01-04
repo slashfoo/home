@@ -17,7 +17,7 @@ if command -v manpath >/dev/null 2>&1; then
     typeset -a old_manpath=( "${manpath[@]}" )
     manpath=()
 
-    typeset dir
+    typeset dir=''
     typeset -a sanitized_path=()
     for dir in "${path[@]}"; do
         case "${dir:A}" in

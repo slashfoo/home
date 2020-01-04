@@ -51,8 +51,8 @@ typeset UPLOAD_URL=
 
 unsetopt err_exit err_return
 typeset SCRIPT_NAME="${0:t}"
-typeset USAGE_MSG
-typeset HELP_MSG
+typeset USAGE_MSG=''
+typeset HELP_MSG=''
 read -r -d '' USAGE_MSG <<-EOUSAGE
 	Usage:	${SCRIPT_NAME} [OPTIONS] [FILEPATH]
 	      	${SCRIPT_NAME} -x
@@ -285,13 +285,13 @@ maim_cmd+=(
 
 debug-cat <<-EOMSG
 	Execution parameters:
-	    $(typeset VERBOSE)
-	    $(typeset DEST_DIR)
-	    $(typeset FILEPATH)
-	    $(typeset FORCE)
-	    $(typeset UPLOAD_URL)
-	    $(typeset WHOLE_SCREEN)
-	    $(typeset maim_cmd)
+	    $(typeset -p VERBOSE)
+	    $(typeset -p DEST_DIR)
+	    $(typeset -p FILEPATH)
+	    $(typeset -p FORCE)
+	    $(typeset -p UPLOAD_URL)
+	    $(typeset -p WHOLE_SCREEN)
+	    $(typeset -p maim_cmd)
 EOMSG
 
 debug-msg "Ensuring destination directory exists"

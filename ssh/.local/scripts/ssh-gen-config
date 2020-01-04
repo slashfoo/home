@@ -18,7 +18,7 @@ typeset target_file="${HOME}/.ssh/config"
 typeset this_dir="${${(%):-%x}:A:h}"
 typeset -aU basedirs=()
 
-typeset basedir
+typeset basedir=''
 for basedir in "${(s.:.)HOME_REPOS}"; do
     [[ ! -d "${basedir}/.ssh" ]] || basedirs+=( "${basedir}/.ssh" )
     [[ ! -d "${basedir}/ssh" ]] || basedirs+=( "${basedir}/ssh" )

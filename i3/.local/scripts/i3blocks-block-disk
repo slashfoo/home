@@ -34,12 +34,12 @@ typeset pretty_dir="${directory/${HOME}/\~}"
 typeset threshold="${PARAMETERS[1]:-60}"
 typeset bad_color='#BF5D5A'
 
-typeset fstype
-typeset use
-typeset avail
-typeset size
-typeset use_pcent
-typeset target
+typeset fstype=''
+typeset use=''
+typeset avail=''
+typeset size=''
+typeset use_pcent=''
+typeset target=''
 
 read -r fstype use avail size use_pcent target < <(
     df --no-sync -a -h \

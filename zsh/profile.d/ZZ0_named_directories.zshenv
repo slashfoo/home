@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-typeset -A aliased_dirs
+typeset -A aliased_dirs=()
 
 aliased_dirs[R]="${HOME}/Repos"
 aliased_dirs[my]="${HOME}/Repos/my"
@@ -20,7 +20,7 @@ aliased_dirs[h]="${HOME}/Repos/my/home"
 aliased_dirs[i]="${HOME}/Repos/my/infra"
 aliased_dirs[n]="${HOME}/Notes"
 
-typeset new_name
+typeset new_name=''
 for new_name in "${(@k)aliased_dirs}"; do
     hash -d "${new_name}"="${aliased_dirs[${new_name}]:a}"
     [[ -o interactive ]] || continue

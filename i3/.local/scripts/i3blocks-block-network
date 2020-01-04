@@ -29,10 +29,10 @@ if [[ -z "${iface}" ]] || [[ ! -d "${iface_dir}" ]]; then
     exit
 fi
 
-typeset operstate
+typeset operstate=''
 read -r operstate <"${iface_dir}/operstate" || :
 
-typeset speed
+typeset speed=''
 read -r speed <"${iface_dir}/speed" || :
 
 typeset -a ipv4=( $(

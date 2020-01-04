@@ -18,7 +18,7 @@ typeset target_file="${HOME}/.config/i3/config"
 typeset this_dir="${${(%):-%x}:A:h}"
 typeset -aU basedirs=()
 
-typeset basedir
+typeset basedir=''
 for basedir in "${(s.:.)HOME_REPOS}"; do
     [[ ! -d "${basedir}/.config/i3" ]] || basedirs+=( "${basedir}/.config/i3" )
     [[ ! -d "${basedir}/i3" ]] || basedirs+=( "${basedir}/i3" )

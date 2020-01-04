@@ -35,7 +35,7 @@ typeset -a potential_lib_paths=(
     "${HOME}/.local/lib/gcc"/*/*/plugin(#q/nOnY1N)
 )
 
-typeset lib_path
+typeset lib_path=''
 for lib_path in "${potential_lib_paths[@]}"; do
     [[ -d "${lib_path}" ]] || continue
     ld_library_path+=( "${lib_path}" )
@@ -47,7 +47,7 @@ unset potential_lib_paths
 typeset -a potential_include_paths=(
     "${HOME}/.local/include"
 )
-typeset include_path
+typeset include_path=''
 for include_path in "${potential_include_paths[@]}"; do
     [[ -d "${include_path}" ]] || continue
     cflags+=( "-I${include_path}" )

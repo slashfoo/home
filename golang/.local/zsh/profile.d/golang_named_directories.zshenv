@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-typeset -A aliased_dirs
+typeset -A aliased_dirs=()
 
 aliased_dirs[g]="${HOME}/Repos/learning/go"
 aliased_dirs[gr]="${HOME}/Repos/learning/go/GOROOT"
 aliased_dirs[gp]="${HOME}/Repos/learning/go/GOPATH"
 aliased_dirs[gl]="${HOME}/Repos/learning/go/GOPATH/src/code.sips.coffee/slashfoo"
-typeset new_name
+typeset new_name=''
 for new_name in "${(@k)aliased_dirs}"; do
     hash -d "${new_name}"="${aliased_dirs[${new_name}]:a}"
 done

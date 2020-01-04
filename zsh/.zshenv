@@ -113,7 +113,7 @@ typeset -a ZSHENV_PLUGINS=(
     "${ZDOTDIR}"/profile.d/*.zshenv(#q-N.)
     "${HOME}"/.local/zsh/profile.d/*.zshenv(#q-N.)
 )
-typeset PLUGIN
+typeset PLUGIN=''
 for PLUGIN in "${(@)ZSHENV_PLUGINS}"; do
     builtin source "${PLUGIN}"
 done

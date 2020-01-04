@@ -30,7 +30,7 @@ typeset -a ZSHRC_PLUGINS=(
     "${ZDOTDIR}"/profile.d/*.zsh(#q-N.)
     "${HOME}"/.local/zsh/profile.d/*.zsh(#q-N.)
 )
-typeset PLUGIN
+typeset PLUGIN=''
 for PLUGIN in "${(@)ZSHRC_PLUGINS}"; do
     builtin source "${PLUGIN}"
 done

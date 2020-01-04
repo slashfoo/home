@@ -42,8 +42,8 @@ typeset DO_ATTACH='yes'
 unsetopt err_exit err_return
 typeset SCRIPT_PATH="${${(%):-%x}:A}"
 typeset SCRIPT_NAME="${SCRIPT_PATH:t}"
-typeset USAGE_MSG
-typeset HELP_MSG
+typeset USAGE_MSG=''
+typeset HELP_MSG=''
 read -r -d '' USAGE_MSG <<-EOUSAGE
 	Usage:	${SCRIPT_NAME} [-c COLOR_NUM] [-f] [-n] [-x] [-v]
 	      	${SCRIPT_NAME} -h
@@ -187,10 +187,10 @@ typeset COLOR="colour${COLOR_NUM}"
 
 debug-cat <<-EOMSG
 	Execution parameters:
-	    $(typeset RUN_WINDOW)
-	    $(typeset FORCE)
-	    $(typeset COLOR_NUM)
-	    $(typeset COLOR)
+	    $(typeset -p RUN_WINDOW)
+	    $(typeset -p FORCE)
+	    $(typeset -p COLOR_NUM)
+	    $(typeset -p COLOR)
 EOMSG
 
 typeset DO_REFRESH=yes

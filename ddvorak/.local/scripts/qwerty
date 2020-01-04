@@ -23,7 +23,7 @@ fi
 
 typeset ABS_SCRIPT_DIR="${${(%):-%x}:A:h}"
 typeset XKB_DIR="${ABS_SCRIPT_DIR:h:h}"
-typeset -i RETURN_CODE
+typeset -i RETURN_CODE=0
 
 xkbcomp -a -w0 -I"${XKB_DIR}" -R"${XKB_DIR}" keymap/qwerty "${DISPLAY}"
 RETURN_CODE="${?}"

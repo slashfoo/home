@@ -18,11 +18,11 @@
 
 typeset -i10 processors="$(nproc)"
 
-typeset -F 2 load1
-typeset -F 2 load5
-typeset -F 2 load15
-typeset running
-typeset -i10 last_pid
+typeset -F 2 load1=0.00
+typeset -F 2 load5=0.00
+typeset -F 2 load15=0.00
+typeset runnin=''
+typeset -i10 last_pid=0
 read -r load1 load5 load15 running last_pid </proc/loadavg
 
 printf "%.2f %.2f %.2f\n%.2f\n" "${load1}" "${load5}" "${load15}" "${load1}"

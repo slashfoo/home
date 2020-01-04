@@ -46,9 +46,9 @@ if [[ -z "${TMUX:-}" ]]; then
     exec tmux attach-session -d -c "${HOME:-/}" -t "=${SESSION_NAME}"
 fi
 
-typeset TMUX_CLIENT
-typeset TMUX_SESSION
-typeset A_CLIENT
+typeset TMUX_CLIENT=''
+typeset TMUX_SESSION=''
+typeset A_CLIENT=()
 read -r TMUX_CLIENT TMUX_SESSION < <(
     tmux display-message -p '#{client_name} #S' 2>/dev/null
 )

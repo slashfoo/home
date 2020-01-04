@@ -31,7 +31,7 @@ trap cleanup EXIT ERR QUIT
 
 typeset -aU packages=( "${@}" )
 
-typeset pkg
+typeset pkg=''
 for pkg in "${(@)packages}"; do
     apt search "${pkg}" >>"${APT_LIST}" 2>/dev/null &
 done

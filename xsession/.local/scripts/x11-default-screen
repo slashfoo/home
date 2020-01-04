@@ -53,7 +53,8 @@ get-res-and-rate () {
 default_display="${connected_displays[1]}"
 connected_displays=( "${(@)connected_displays:#${default_display}}" )
 
-typeset resolution refresh_rate
+typeset resolution=''
+typeset refresh_rate=''
 read -r resolution refresh_rate < <(
     get-res-and-rate "${default_display}"
 )
